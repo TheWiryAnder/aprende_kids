@@ -14,6 +14,16 @@ import '../../domain/models/avatar_part_item.dart';
 
 class AvatarCatalog {
   static bool _initialized = false;
+  static final Set<String> _availableCategories = <String>{};
+  static const List<String> _defaultCategoryOrder = [
+    'face',
+    'body',
+    'hair',
+    'top',
+    'bottom',
+    'shoes',
+    'background',
+  ];
 
   // BASES DE PIEL / CARA
   static final List<AvatarPartItem> faces = [
@@ -448,6 +458,8 @@ class AvatarCatalog {
       final Map<String, dynamic> manifestMap =
           jsonDecode(manifestContent) as Map<String, dynamic>;
 
+      _availableCategories.clear();
+
       manifestMap.forEach((assetPath, value) {
         if (!assetPath.startsWith('assets/avatar/')) {
           return;
@@ -458,7 +470,14 @@ class AvatarCatalog {
           return;
         }
 
-        final category = segments[2];
+        final folderName = segments[2];
+        final category = _normalizeCategoryKey(folderName);
+        if (category == null) {
+          return;
+        }
+
+        _availableCategories.add(category);
+
         final parts = _partsByCategory[category];
         if (parts == null) {
           return;
@@ -678,19 +697,39 @@ class AvatarCatalog {
   }
 
   /// Obtiene todas las categorías disponibles
-  static List<String> get categories => [
-        'face',
-        'body',
-        'eyes',
-        'mouth',
-        'hair',
-        'top',
-        'bottom',
-        'shoes',
-        'hands',
-        'accessory',
-        'background',
-      ];
+  static List<String> get categories {
+    if (_availableCategories.isEmpty) {
+      return List.unmodifiable(_defaultCategoryOrder);
+    }
+
+    final ordered = _defaultCategoryOrder
+        .where((category) => _availableCategories.contains(category))
+        .toList();
+
+    for (final category in _availableCategories) {
+      if (!ordered.contains(category)) {
+        ordered.add(category);
+      }
+    }
+
+    return List.unmodifiable(ordered);
+  }
+
+  static String? _normalizeCategoryKey(String folderName) {
+    final normalized = folderName.toLowerCase();
+    if (_partsByCategory.containsKey(normalized)) {
+      return normalized;
+    }
+
+    if (normalized.endsWith('s')) {
+      final trimmed = normalized.substring(0, normalized.length - 1);
+      if (_partsByCategory.containsKey(trimmed)) {
+        return trimmed;
+      }
+    }
+
+    return null;
+  }
 
   /// Obtiene el nombre en español de una categoría
   static String getCategoryName(String category) {
