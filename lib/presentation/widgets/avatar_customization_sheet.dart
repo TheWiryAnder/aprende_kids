@@ -262,11 +262,8 @@ class _AvatarCustomizationSheetState extends State<AvatarCustomizationSheet> {
   Widget _buildPartsList() {
     final unlockedIds = _getUnlockedList(_selectedCategory);
     final currentPart = _getCurrentPart(_selectedCategory);
-    final allParts = AvatarCatalog.getPartsByCategory(_selectedCategory);
-
-    // Filtrar solo las partes desbloqueadas
     final availableParts =
-        allParts.where((part) => unlockedIds.contains(part.id)).toList();
+        AvatarCatalog.getPartsByCategory(_selectedCategory).toList();
 
     if (availableParts.isEmpty) {
       return Center(
@@ -274,24 +271,16 @@ class _AvatarCustomizationSheetState extends State<AvatarCustomizationSheet> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(
-              Icons.lock_outline,
+              Icons.inventory_2_outlined,
               size: 64,
               color: Colors.grey,
             ),
             const SizedBox(height: 16),
             Text(
-              'No tienes partes desbloqueadas',
+              'No hay elementos disponibles en esta categoría',
               style: GoogleFonts.fredoka(
-                fontSize: 18,
+                fontSize: 16,
                 color: Colors.grey.shade600,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Visita la tienda para comprar más',
-              style: GoogleFonts.fredoka(
-                fontSize: 14,
-                color: Colors.grey.shade500,
               ),
             ),
           ],
@@ -311,17 +300,25 @@ class _AvatarCustomizationSheetState extends State<AvatarCustomizationSheet> {
       itemBuilder: (context, index) {
         final part = availableParts[index];
         final isSelected = currentPart == part.id;
+        final isUnlocked =
+            unlockedIds.isEmpty || unlockedIds.contains(part.id);
 
         return GestureDetector(
-          onTap: () {
-            _updateAvatarPart(_selectedCategory, part.id);
-          },
+          onTap: isUnlocked
+              ? () {
+                  _updateAvatarPart(_selectedCategory, part.id);
+                }
+              : null,
           child: Container(
             decoration: BoxDecoration(
               color: isSelected ? AppColors.primary.withOpacity(0.1) : Colors.white,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isSelected ? AppColors.primary : Colors.grey.shade300,
+                color: isSelected
+                    ? AppColors.primary
+                    : isUnlocked
+                        ? Colors.grey.shade300
+                        : Colors.grey.shade400,
                 width: isSelected ? 3 : 1,
               ),
             ),
@@ -334,8 +331,16 @@ class _AvatarCustomizationSheetState extends State<AvatarCustomizationSheet> {
                   part.name,
                   style: GoogleFonts.fredoka(
                     fontSize: 13,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                    color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                    fontWeight: isSelected
+                        ? FontWeight.bold
+                        : isUnlocked
+                            ? FontWeight.w600
+                            : FontWeight.w500,
+                    color: isSelected
+                        ? AppColors.primary
+                        : isUnlocked
+                            ? AppColors.textSecondary
+                            : Colors.grey,
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 1,
@@ -355,6 +360,18 @@ class _AvatarCustomizationSheetState extends State<AvatarCustomizationSheet> {
                         fontSize: 10,
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                if (!isUnlocked)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text(
+                      'Bloqueado',
+                      style: GoogleFonts.fredoka(
+                        fontSize: 10,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
