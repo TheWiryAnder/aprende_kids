@@ -96,13 +96,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showAvatarCustomization(BuildContext context, AvatarModel avatar, String userId) {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => AvatarCustomizationSheet(
-        avatar: avatar,
-        userId: userId,
+      barrierDismissible: true,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+        child: AvatarCustomizationSheet(
+          avatar: avatar,
+          userId: userId,
+        ),
       ),
     );
   }

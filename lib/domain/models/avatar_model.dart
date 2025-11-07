@@ -72,61 +72,77 @@ class AvatarModel {
 
   /// Crea un avatar básico para un nuevo usuario masculino
   factory AvatarModel.defaultMale(String userId) {
+    String _default(String category) {
+      return AvatarCatalog.fallbackForCategory(category);
+    }
+
+    List<String> _defaults(String category) {
+      return AvatarCatalog.getDefaultUnlockedIds(category);
+    }
+
     return AvatarModel(
       userId: userId,
       gender: 'male',
-      face: 'face_skin_light',
-      body: 'body_kid_boy',
-      eyes: 'eyes_round_brown',
-      mouth: 'mouth_smile',
-      hair: 'hair_curly_dark',
-      top: 'top_tshirt_blue',
-      bottom: 'bottom_jeans_dark',
-      shoes: 'shoes_sneakers_blue',
-      hands: 'hands_default_light',
-      accessory: 'acc_none',
-      background: 'bg_classroom',
-      unlockedFaces: const ['face_skin_light', 'face_skin_warm'],
-      unlockedBodies: const ['body_kid_boy', 'body_kid_girl'],
-      unlockedEyes: const ['eyes_round_brown'],
-      unlockedMouths: const ['mouth_smile'],
-      unlockedHairs: const ['hair_curly_dark'],
-      unlockedTops: const ['top_tshirt_blue'],
-      unlockedBottoms: const ['bottom_jeans_dark'],
-      unlockedShoes: const ['shoes_sneakers_blue'],
-      unlockedHands: const ['hands_default_light'],
-      unlockedAccessories: const ['acc_none'],
-      unlockedBackgrounds: const ['bg_classroom'],
+      face: _default('face'),
+      body: _default('body'),
+      eyes: _default('eyes'),
+      mouth: _default('mouth'),
+      hair: _default('hair'),
+      top: _default('top'),
+      bottom: _default('bottom'),
+      shoes: _default('shoes'),
+      hands: _default('hands'),
+      accessory: _default('accessory'),
+      background: _default('background'),
+      unlockedFaces: _defaults('face'),
+      unlockedBodies: _defaults('body'),
+      unlockedEyes: _defaults('eyes'),
+      unlockedMouths: _defaults('mouth'),
+      unlockedHairs: _defaults('hair'),
+      unlockedTops: _defaults('top'),
+      unlockedBottoms: _defaults('bottom'),
+      unlockedShoes: _defaults('shoes'),
+      unlockedHands: _defaults('hands'),
+      unlockedAccessories: _defaults('accessory'),
+      unlockedBackgrounds: _defaults('background'),
     );
   }
 
   /// Crea un avatar básico para un nuevo usuario femenino
   factory AvatarModel.defaultFemale(String userId) {
+    String _default(String category) {
+      return AvatarCatalog.fallbackForCategory(category);
+    }
+
+    List<String> _defaults(String category) {
+      return AvatarCatalog.getDefaultUnlockedIds(category);
+    }
+
     return AvatarModel(
       userId: userId,
       gender: 'female',
-      face: 'face_skin_warm',
-      body: 'body_kid_girl',
-      eyes: 'eyes_round_hazel',
-      mouth: 'mouth_smile',
-      hair: 'hair_long_brown',
-      top: 'top_blouse_magenta',
-      bottom: 'bottom_skirt_teal',
-      shoes: 'shoes_sneakers_pink',
-      hands: 'hands_default_warm',
-      accessory: 'acc_none',
-      background: 'bg_classroom',
-      unlockedFaces: const ['face_skin_light', 'face_skin_warm'],
-      unlockedBodies: const ['body_kid_boy', 'body_kid_girl'],
-      unlockedEyes: const ['eyes_round_hazel'],
-      unlockedMouths: const ['mouth_smile'],
-      unlockedHairs: const ['hair_long_brown'],
-      unlockedTops: const ['top_blouse_magenta'],
-      unlockedBottoms: const ['bottom_skirt_teal'],
-      unlockedShoes: const ['shoes_sneakers_pink'],
-      unlockedHands: const ['hands_default_warm'],
-      unlockedAccessories: const ['acc_none'],
-      unlockedBackgrounds: const ['bg_classroom'],
+      face: _default('face'),
+      body: _default('body'),
+      eyes: _default('eyes'),
+      mouth: _default('mouth'),
+      hair: _default('hair'),
+      top: _default('top'),
+      bottom: _default('bottom'),
+      shoes: _default('shoes'),
+      hands: _default('hands'),
+      accessory: _default('accessory'),
+      background: _default('background'),
+      unlockedFaces: _defaults('face'),
+      unlockedBodies: _defaults('body'),
+      unlockedEyes: _defaults('eyes'),
+      unlockedMouths: _defaults('mouth'),
+      unlockedHairs: _defaults('hair'),
+      unlockedTops: _defaults('top'),
+      unlockedBottoms: _defaults('bottom'),
+      unlockedShoes: _defaults('shoes'),
+      unlockedHands: _defaults('hands'),
+      unlockedAccessories: _defaults('accessory'),
+      unlockedBackgrounds: _defaults('background'),
     );
   }
 
@@ -164,65 +180,63 @@ class AvatarModel {
   /// Crea un modelo desde Map de Firebase con compatibilidad retroactiva
   factory AvatarModel.fromMap(Map<String, dynamic> map) {
     final gender = (map['gender'] as String? ?? 'male').toLowerCase();
-    final fallbackBody = gender == 'female' ? 'body_kid_girl' : 'body_kid_boy';
-
     return AvatarModel(
       userId: map['userId'] as String? ?? '',
       gender: gender,
       face: AvatarCatalog.resolvePartId(
         map['face'] as String?,
         category: 'face',
-        fallbackId: 'face_skin_light',
+        fallbackId: AvatarCatalog.fallbackForCategory('face'),
       ),
       body: AvatarCatalog.resolvePartId(
         map['body'] as String?,
         category: 'body',
-        fallbackId: fallbackBody,
+        fallbackId: AvatarCatalog.fallbackForCategory('body'),
       ),
       eyes: AvatarCatalog.resolvePartId(
         map['eyes'] as String?,
         category: 'eyes',
-        fallbackId: 'eyes_round_brown',
+        fallbackId: AvatarCatalog.fallbackForCategory('eyes'),
       ),
       mouth: AvatarCatalog.resolvePartId(
         map['mouth'] as String?,
         category: 'mouth',
-        fallbackId: 'mouth_smile',
+        fallbackId: AvatarCatalog.fallbackForCategory('mouth'),
       ),
       hair: AvatarCatalog.resolvePartId(
         map['hair'] as String?,
         category: 'hair',
-        fallbackId: 'hair_curly_dark',
+        fallbackId: AvatarCatalog.fallbackForCategory('hair'),
       ),
       top: AvatarCatalog.resolvePartId(
         map['top'] as String?,
         category: 'top',
-        fallbackId: 'top_tshirt_blue',
+        fallbackId: AvatarCatalog.fallbackForCategory('top'),
       ),
       bottom: AvatarCatalog.resolvePartId(
         map['bottom'] as String?,
         category: 'bottom',
-        fallbackId: 'bottom_jeans_dark',
+        fallbackId: AvatarCatalog.fallbackForCategory('bottom'),
       ),
       shoes: AvatarCatalog.resolvePartId(
         map['shoes'] as String?,
         category: 'shoes',
-        fallbackId: 'shoes_sneakers_blue',
+        fallbackId: AvatarCatalog.fallbackForCategory('shoes'),
       ),
       hands: AvatarCatalog.resolvePartId(
         map['hands'] as String?,
         category: 'hands',
-        fallbackId: 'hands_default_light',
+        fallbackId: AvatarCatalog.fallbackForCategory('hands'),
       ),
       accessory: AvatarCatalog.resolvePartId(
         map['accessory'] as String?,
         category: 'accessory',
-        fallbackId: 'acc_none',
+        fallbackId: AvatarCatalog.fallbackForCategory('accessory'),
       ),
       background: AvatarCatalog.resolvePartId(
         map['background'] as String?,
         category: 'background',
-        fallbackId: 'bg_classroom',
+        fallbackId: AvatarCatalog.fallbackForCategory('background'),
       ),
       currentExpression: map['currentExpression'] as String? ?? 'neutral',
       unlockedFaces: _mapUnlocked(map['unlockedFaces'], 'face'),
