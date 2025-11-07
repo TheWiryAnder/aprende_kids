@@ -289,6 +289,19 @@ class _AvatarWidgetState extends State<AvatarWidget>
         return;
       }
 
+      final isPng = part.assetPath.toLowerCase().endsWith('.png');
+
+      if (isPng) {
+        children.add(
+          Positioned.fill(
+            child: Center(
+              child: _buildAsset(part),
+            ),
+          ),
+        );
+        return;
+      }
+
       final layout = _layerLayouts[key];
       if (layout == null) {
         children.add(Center(child: _buildAsset(part)));
@@ -361,10 +374,12 @@ class _AvatarWidgetState extends State<AvatarWidget>
       return const SizedBox.shrink();
     }
 
+    final isPng = part.assetPath.toLowerCase().endsWith('.png');
+
     return AvatarAsset(
       assetPath: part.assetPath,
-      width: width,
-      height: height,
+      width: isPng ? null : width,
+      height: isPng ? null : height,
       fit: BoxFit.contain,
     );
   }
@@ -458,10 +473,12 @@ class SimpleAvatarWidget extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
+    final isPng = part.assetPath.toLowerCase().endsWith('.png');
+
     return AvatarAsset(
       assetPath: part.assetPath,
-      width: size,
-      height: size,
+      width: isPng ? null : size,
+      height: isPng ? null : size,
       fit: BoxFit.contain,
     );
   }
