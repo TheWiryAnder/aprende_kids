@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
-  <defs>
-    <radialGradient id="darkSkin" cx="100" cy="90" r="90" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#c2885a" />
-      <stop offset="1" stop-color="#8d5b2f" />
-    </radialGradient>
-  </defs>
-  <circle cx="100" cy="100" r="90" fill="url(#darkSkin)" />
-</svg>

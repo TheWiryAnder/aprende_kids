@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200">
-  <path d="M60 40 L90 20 H150 L180 40 L160 80 V170 H80 V80 Z" fill="#3a8dde" />
-  <path d="M60 40 L40 80 L80 100 V80 Z" fill="#2b6ca8" />
-  <path d="M180 40 L200 80 L160 100 V80 Z" fill="#2b6ca8" />
-  <rect x="80" y="80" width="80" height="90" fill="#3a8dde" />
-</svg>

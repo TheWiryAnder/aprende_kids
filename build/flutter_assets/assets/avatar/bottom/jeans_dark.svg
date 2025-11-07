@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220">
-  <path d="M90 10 H130 L150 200 H120 L110 120 L100 200 H70 Z" fill="#2d4a7a" />
-  <path d="M90 10 H70 L60 200 H90 L100 60" fill="#20365a" />
-  <path d="M130 10 H150 L160 200 H130 L120 60" fill="#20365a" />
-  <circle cx="110" cy="25" r="6" fill="#f7c269" />
-</svg>
