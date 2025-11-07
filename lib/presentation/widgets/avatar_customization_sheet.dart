@@ -6,6 +6,7 @@
 /// Autor: Sistema Educativo
 /// Fecha: 2025
 
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/gestures.dart';
@@ -168,86 +169,92 @@ class _AvatarCustomizationSheetState extends State<AvatarCustomizationSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
+    final size = MediaQuery.of(context).size;
+    final double availableWidth = size.width - 32;
+    final double resolvedWidth = availableWidth.isFinite
+        ? availableWidth.clamp(280.0, 720.0).toDouble()
+        : 720.0;
+    final double resolvedHeight = math.min(size.height * 0.85, 640.0);
+
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: resolvedWidth,
+          maxHeight: resolvedHeight,
         ),
-      ),
-      child: Column(
-        children: [
-          // Handle
-          Container(
-            margin: const EdgeInsets.only(top: 12),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade300,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-
-          // Header
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.pop(context),
-                ),
-                Expanded(
-                  child: Text(
-                    'Personalizar Avatar',
-                    style: GoogleFonts.fredoka(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+        child: Material(
+          color: Colors.white,
+          elevation: 12,
+          borderRadius: BorderRadius.circular(28),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            children: [
+              // Header
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
                     ),
-                    textAlign: TextAlign.center,
-                  ),
+                    Expanded(
+                      child: Text(
+                        'Personalizar Avatar',
+                        style: GoogleFonts.fredoka(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(width: 48),
+                  ],
                 ),
-                const SizedBox(width: 48), // Balance con el botón de cerrar
-              ],
-            ),
+              ),
+
+              // Vista previa del avatar
+              StreamBuilder<AvatarModel?>(
+                stream: _avatarService.avatarStream(widget.userId),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData && snapshot.data != null) {
+                    _currentAvatar = snapshot.data!;
+                  }
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: AvatarWidget(
+                      avatar: _currentAvatar,
+                      size: 140,
+                      animate: false,
+                    ),
+                  );
+                },
+              ),
+
+              const SizedBox(height: 8),
+
+              // Selector de categoría
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: _buildCategorySelector(),
+              ),
+
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Divider(height: 1),
+              ),
+
+              // Lista de partes desbloqueadas
+              Expanded(
+                child: _isUpdating
+                    ? const Center(child: CircularProgressIndicator())
+                    : _buildPartsList(),
+              ),
+            ],
           ),
-
-          // Vista previa del avatar
-          StreamBuilder<AvatarModel?>(
-            stream: _avatarService.avatarStream(widget.userId),
-            builder: (context, snapshot) {
-              if (snapshot.hasData && snapshot.data != null) {
-                _currentAvatar = snapshot.data!;
-              }
-
-              return Container(
-                padding: const EdgeInsets.all(16),
-                child: AvatarWidget(
-                  avatar: _currentAvatar,
-                  size: 120,
-                  animate: false,
-                ),
-              );
-            },
-          ),
-
-          const SizedBox(height: 8),
-
-          // Selector de categoría
-          _buildCategorySelector(),
-
-          const Divider(height: 24),
-
-          // Lista de partes desbloqueadas
-          Expanded(
-            child: _isUpdating
-                ? const Center(child: CircularProgressIndicator())
-                : _buildPartsList(),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -293,12 +300,12 @@ class _AvatarCustomizationSheetState extends State<AvatarCustomizationSheet> {
     }
 
     return GridView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 1.0,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 0.9,
       ),
       itemCount: availableParts.length,
       itemBuilder: (context, index) {
@@ -322,12 +329,12 @@ class _AvatarCustomizationSheetState extends State<AvatarCustomizationSheet> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 _PartPreview(part: part),
-                const SizedBox(height: 4),
+                const SizedBox(height: 8),
                 Text(
                   part.name,
                   style: GoogleFonts.fredoka(
-                    fontSize: 11,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontSize: 13,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                     color: isSelected ? AppColors.primary : AppColors.textSecondary,
                   ),
                   textAlign: TextAlign.center,
@@ -336,16 +343,16 @@ class _AvatarCustomizationSheetState extends State<AvatarCustomizationSheet> {
                 ),
                 if (isSelected)
                   Container(
-                    margin: const EdgeInsets.only(top: 4),
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    margin: const EdgeInsets.only(top: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       'Equipado',
                       style: GoogleFonts.fredoka(
-                        fontSize: 9,
+                        fontSize: 10,
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
@@ -370,7 +377,7 @@ class _PartPreview extends StatelessWidget {
     final theme = Theme.of(context);
     final fallback = Text(
       part.emoji == null || part.emoji!.isEmpty ? '🎨' : part.emoji!,
-      style: theme.textTheme.displaySmall?.copyWith(fontSize: 40),
+      style: theme.textTheme.displaySmall?.copyWith(fontSize: 52),
     );
 
     if (part.assetPath.isEmpty) {
@@ -380,8 +387,8 @@ class _PartPreview extends StatelessWidget {
     return Center(
       child: AvatarAsset(
         assetPath: part.assetPath,
-        width: 56,
-        height: 56,
+        width: 80,
+        height: 80,
         fit: BoxFit.contain,
         placeholder: fallback,
       ),
