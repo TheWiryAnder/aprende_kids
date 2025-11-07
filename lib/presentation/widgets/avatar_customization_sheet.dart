@@ -1,7 +1,7 @@
 /// Sheet de Personalización de Avatar
 ///
 /// Permite al usuario cambiar las partes de su avatar
-/// usando solo las partes que ha desbloqueado.
+/// usando todas las piezas disponibles en las carpetas de assets.
 ///
 /// Autor: Sistema Educativo
 /// Fecha: 2025
@@ -93,35 +93,6 @@ class _AvatarCustomizationSheetState extends State<AvatarCustomizationSheet> {
       if (mounted) {
         setState(() => _isUpdating = false);
       }
-    }
-  }
-
-  List<String> _getUnlockedList(String category) {
-    switch (category) {
-      case 'face':
-        return _currentAvatar.unlockedFaces;
-      case 'body':
-        return _currentAvatar.unlockedBodies;
-      case 'eyes':
-        return _currentAvatar.unlockedEyes;
-      case 'mouth':
-        return _currentAvatar.unlockedMouths;
-      case 'hair':
-        return _currentAvatar.unlockedHairs;
-      case 'top':
-        return _currentAvatar.unlockedTops;
-      case 'bottom':
-        return _currentAvatar.unlockedBottoms;
-      case 'shoes':
-        return _currentAvatar.unlockedShoes;
-      case 'hands':
-        return _currentAvatar.unlockedHands;
-      case 'accessory':
-        return _currentAvatar.unlockedAccessories;
-      case 'background':
-        return _currentAvatar.unlockedBackgrounds;
-      default:
-        return [];
     }
   }
 
@@ -260,7 +231,6 @@ class _AvatarCustomizationSheetState extends State<AvatarCustomizationSheet> {
   }
 
   Widget _buildPartsList() {
-    final unlockedIds = _getUnlockedList(_selectedCategory);
     final currentPart = _getCurrentPart(_selectedCategory);
     final availableParts =
         AvatarCatalog.getPartsByCategory(_selectedCategory).toList();
@@ -300,15 +270,11 @@ class _AvatarCustomizationSheetState extends State<AvatarCustomizationSheet> {
       itemBuilder: (context, index) {
         final part = availableParts[index];
         final isSelected = currentPart == part.id;
-        final isUnlocked =
-            unlockedIds.isEmpty || unlockedIds.contains(part.id);
 
         return GestureDetector(
-          onTap: isUnlocked
-              ? () {
-                  _updateAvatarPart(_selectedCategory, part.id);
-                }
-              : null,
+          onTap: () {
+            _updateAvatarPart(_selectedCategory, part.id);
+          },
           child: Container(
             decoration: BoxDecoration(
               color: isSelected ? AppColors.primary.withOpacity(0.1) : Colors.white,
@@ -316,9 +282,7 @@ class _AvatarCustomizationSheetState extends State<AvatarCustomizationSheet> {
               border: Border.all(
                 color: isSelected
                     ? AppColors.primary
-                    : isUnlocked
-                        ? Colors.grey.shade300
-                        : Colors.grey.shade400,
+                    : Colors.grey.shade300,
                 width: isSelected ? 3 : 1,
               ),
             ),
@@ -333,14 +297,10 @@ class _AvatarCustomizationSheetState extends State<AvatarCustomizationSheet> {
                     fontSize: 13,
                     fontWeight: isSelected
                         ? FontWeight.bold
-                        : isUnlocked
-                            ? FontWeight.w600
-                            : FontWeight.w500,
+                        : FontWeight.w600,
                     color: isSelected
                         ? AppColors.primary
-                        : isUnlocked
-                            ? AppColors.textSecondary
-                            : Colors.grey,
+                        : AppColors.textSecondary,
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 1,
@@ -360,18 +320,6 @@ class _AvatarCustomizationSheetState extends State<AvatarCustomizationSheet> {
                         fontSize: 10,
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                if (!isUnlocked)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 6),
-                    child: Text(
-                      'Bloqueado',
-                      style: GoogleFonts.fredoka(
-                        fontSize: 10,
-                        color: Colors.grey.shade600,
-                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
