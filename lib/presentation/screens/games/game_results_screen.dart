@@ -464,28 +464,32 @@ class _GameResultsScreenState extends State<GameResultsScreen>
 
                     const SizedBox(height: 32),
 
-                    // Botones
+                    // Botones de acción
                     Column(
                       children: [
                         // Ver ranking
-                        ElevatedButton.icon(
-                          onPressed: _saveSuccess
-                              ? () => context.push('/ranking')
-                              : null,
-                          icon: const Icon(Icons.leaderboard),
-                          label: Text(
-                            'Ver Ranking',
-                            style: GoogleFonts.fredoka(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: _saveSuccess
+                                ? () => context.push('/ranking')
+                                : null,
+                            icon: const Icon(Icons.leaderboard, size: 24),
+                            label: Text(
+                              'Ver Ranking',
+                              style: GoogleFonts.fredoka(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: categoryColor,
-                            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: categoryColor,
+                              padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 32),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              elevation: 4,
                             ),
                           ),
                         ),
@@ -493,54 +497,56 @@ class _GameResultsScreenState extends State<GameResultsScreen>
                         const SizedBox(height: 12),
 
                         // Jugar de nuevo
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            final gameId = widget.gameData['gameId'] as String;
-                            context.pop();
-                            // Esperar un momento antes de reiniciar
-                            Future.delayed(const Duration(milliseconds: 100), () {
-                              if (mounted) {
-                                context.push('/play/$gameId');
-                              }
-                            });
-                          },
-                          icon: const Icon(Icons.refresh),
-                          label: Text(
-                            'Jugar de Nuevo',
-                            style: GoogleFonts.fredoka(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              final gameId = widget.gameData['gameId'] as String;
+                              context.push('/play/$gameId');
+                            },
+                            icon: const Icon(Icons.refresh, size: 24),
+                            label: Text(
+                              'Jugar de Nuevo',
+                              style: GoogleFonts.fredoka(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: categoryColor,
-                            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 32),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              elevation: 4,
                             ),
                           ),
                         ),
 
                         const SizedBox(height: 12),
 
-                        // Volver al menú
-                        OutlinedButton.icon(
-                          onPressed: () => context.go('/home'),
-                          icon: const Icon(Icons.home),
-                          label: Text(
-                            'Volver al Menú',
-                            style: GoogleFonts.fredoka(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
+                        // Volver al inicio (HOME)
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () => context.go('/home'),
+                            icon: const Icon(Icons.home, size: 24),
+                            label: Text(
+                              'Volver al Inicio',
+                              style: GoogleFonts.fredoka(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            side: const BorderSide(color: Colors.white, width: 2),
-                            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: categoryColor,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 32),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              elevation: 4,
                             ),
                           ),
                         ),

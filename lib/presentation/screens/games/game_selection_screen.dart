@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../app/theme/colors.dart';
+import '../../../app/utils/responsive_utils.dart';
 
 class GameSelectionScreen extends StatelessWidget {
   final String categoryId;
@@ -54,19 +55,41 @@ class GameSelectionScreen extends StatelessWidget {
                     child: Center(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 1000),
-                        child: GridView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
-                            childAspectRatio: 1.0,
-                            crossAxisSpacing: 20,
-                            mainAxisSpacing: 20,
-                          ),
-                          itemCount: games.length,
-                          itemBuilder: (context, index) {
-                            final game = games[index];
-                            return _buildGameBlock(context, game, categoryInfo);
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            // Grid responsive según ancho
+                            final crossAxisCount = getGridCrossAxisCount(
+                              constraints.maxWidth,
+                              minItemWidth: 180,
+                            );
+
+                            return GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: crossAxisCount,
+                                childAspectRatio: context.responsive(
+                                  mobile: 0.65,
+                                  tablet: 0.75,
+                                  desktop: 0.80,
+                                ),
+                                crossAxisSpacing: context.responsive(
+                                  mobile: 12.0,
+                                  tablet: 16.0,
+                                  desktop: 20.0,
+                                ),
+                                mainAxisSpacing: context.responsive(
+                                  mobile: 12.0,
+                                  tablet: 16.0,
+                                  desktop: 20.0,
+                                ),
+                              ),
+                              itemCount: games.length,
+                              itemBuilder: (context, index) {
+                                final game = games[index];
+                                return _buildGameBlock(context, game, categoryInfo);
+                              },
+                            );
                           },
                         ),
                       ),
@@ -162,21 +185,26 @@ class GameSelectionScreen extends StatelessWidget {
           },
           borderRadius: BorderRadius.circular(24),
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(
+              context.responsive(mobile: 12.0, tablet: 16.0, desktop: 20.0),
+            ),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                // Icono del juego con gradiente
+                // Icono del juego con gradiente - Responsive
                 Container(
-                  width: 100,
-                  height: 100,
+                  width: context.responsive(mobile: 70.0, tablet: 85.0, desktop: 100.0),
+                  height: context.responsive(mobile: 70.0, tablet: 85.0, desktop: 100.0),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: categoryInfo['gradient'] as List<Color>,
                     ),
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(
+                      context.responsive(mobile: 16.0, tablet: 20.0, desktop: 24.0),
+                    ),
                     boxShadow: [
                       BoxShadow(
                         color: (categoryInfo['gradient'] as List<Color>)[0]
@@ -189,93 +217,123 @@ class GameSelectionScreen extends StatelessWidget {
                   child: Icon(
                     game['icon'] as IconData,
                     color: Colors.white,
-                    size: 50,
+                    size: context.responsive(mobile: 35.0, tablet: 42.0, desktop: 50.0),
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                SizedBox(height: context.responsive(mobile: 8.0, tablet: 12.0, desktop: 14.0)),
 
-                // Título del juego
+                // Título del juego - Responsive
                 Text(
                   game['title'] as String,
                   style: GoogleFonts.fredoka(
-                    fontSize: 22,
+                    fontSize: getResponsiveFontSize(
+                      context,
+                      mobile: 15.0,
+                      tablet: 18.0,
+                      desktop: 21.0,
+                    ),
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
+                    height: 1.1,
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
 
-                const SizedBox(height: 12),
+                SizedBox(height: context.responsive(mobile: 4.0, tablet: 6.0, desktop: 8.0)),
 
-                // Descripción
-                Text(
-                  game['description'] as String,
-                  style: GoogleFonts.fredoka(
-                    fontSize: 16,
-                    color: AppColors.textSecondary,
-                    height: 1.4,
+                // Descripción - Más compacta
+                Flexible(
+                  child: Text(
+                    game['description'] as String,
+                    style: GoogleFonts.fredoka(
+                      fontSize: getResponsiveFontSize(
+                        context,
+                        mobile: 11.0,
+                        tablet: 13.0,
+                        desktop: 14.0,
+                      ),
+                      color: AppColors.textSecondary,
+                      height: 1.2,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  textAlign: TextAlign.center,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
                 ),
 
-                const Spacer(),
+                SizedBox(height: context.responsive(mobile: 6.0, tablet: 8.0, desktop: 10.0)),
 
-                // Badges de edad y dificultad
+                // Badges de edad y dificultad - Compactos y sin overflow
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Badge de edad
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.person, size: 16, color: AppColors.primary),
-                          const SizedBox(width: 6),
-                          Text(
-                            game['ageRange'] as String,
-                            style: GoogleFonts.fredoka(
-                              fontSize: 14,
+                    // Badge de edad - Flexible
+                    Flexible(
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: context.responsive(mobile: 6.0, tablet: 8.0, desktop: 10.0),
+                          vertical: context.responsive(mobile: 4.0, tablet: 5.0, desktop: 6.0),
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.person,
+                              size: context.responsive(mobile: 13.0, tablet: 14.0, desktop: 15.0),
                               color: AppColors.primary,
-                              fontWeight: FontWeight.w600,
                             ),
-                          ),
-                        ],
+                            SizedBox(width: context.responsive(mobile: 3.0, tablet: 4.0, desktop: 5.0)),
+                            Flexible(
+                              child: Text(
+                                game['ageRange'] as String,
+                                style: GoogleFonts.fredoka(
+                                  fontSize: getResponsiveFontSize(
+                                    context,
+                                    mobile: 10.0,
+                                    tablet: 11.5,
+                                    desktop: 13.0,
+                                  ),
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: context.responsive(mobile: 4.0, tablet: 6.0, desktop: 8.0)),
 
-                    // Badge de dificultad
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _getDifficultyColor(game['difficulty'] as int)
-                            .withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: List.generate(
-                          game['difficulty'] as int,
-                          (index) => Icon(
-                            Icons.star,
-                            size: 16,
-                            color: _getDifficultyColor(game['difficulty'] as int),
+                    // Badge de dificultad - Flexible
+                    Flexible(
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: context.responsive(mobile: 6.0, tablet: 8.0, desktop: 10.0),
+                          vertical: context.responsive(mobile: 4.0, tablet: 5.0, desktop: 6.0),
+                        ),
+                        decoration: BoxDecoration(
+                          color: _getDifficultyColor(game['difficulty'] as int)
+                              .withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: List.generate(
+                            game['difficulty'] as int,
+                            (index) => Icon(
+                              Icons.star,
+                              size: context.responsive(mobile: 12.0, tablet: 13.5, desktop: 15.0),
+                              color: _getDifficultyColor(game['difficulty'] as int),
+                            ),
                           ),
                         ),
                       ),

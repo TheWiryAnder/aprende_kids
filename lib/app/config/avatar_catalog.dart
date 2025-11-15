@@ -85,14 +85,15 @@ class AvatarCatalog {
           return;
         }
 
+        final isDefault = !_hasDefault(parts);
         final item = AvatarPartItem(
           id: _generateId(category, segments.last, parts),
           category: category,
           assetPath: assetPath,
           name: _formatName(segments.last),
           description: _defaultDescription(category),
-          price: 0,
-          isDefault: !_hasDefault(parts),
+          price: isDefault ? 0 : _calculatePrice(category),
+          isDefault: isDefault,
           emoji: _categoryEmoji(category),
         );
 
@@ -401,7 +402,32 @@ class AvatarCatalog {
     }
   }
 
-  static List<AvatarPartItem> get _allParts => _partsByCategory.values
-      .expand((parts) => parts)
-      .toList(growable: false);
+  /// Calcula el precio de un accesorio según su categoría
+  /// Los precios están balanceados para el sistema de recompensas del juego
+  static int _calculatePrice(String category) {
+    switch (category) {
+      case 'face':
+      case 'body':
+        return 50; // Partes básicas del avatar
+      case 'eyes':
+      case 'mouth':
+        return 30; // Expresiones faciales
+      case 'hair':
+        return 80; // Peinados más caros
+      case 'top':
+      case 'bottom':
+        return 100; // Ropa
+      case 'shoes':
+        return 60; // Zapatos
+      case 'hands':
+        return 40; // Manos/gestos
+      case 'accessory':
+        return 120; // Accesorios especiales más caros
+      case 'background':
+        return 150; // Fondos premium
+      default:
+        return 50; // Precio por defecto
+    }
+  }
+
 }

@@ -117,6 +117,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               fontWeight: FontWeight.bold,
                               color: AppColors.primary,
                             ),
+                            textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 8),
                           Text(
@@ -132,6 +133,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           // Campo de usuario
                           TextFormField(
                             controller: _usernameController,
+                            textInputAction: TextInputAction.next,
+                            onFieldSubmitted: (_) {
+                              // Mover al siguiente campo al presionar Enter
+                              FocusScope.of(context).nextFocus();
+                            },
                             decoration: InputDecoration(
                               labelText: 'Nombre de usuario',
                               hintText: 'Ingresa tu usuario',
@@ -156,6 +162,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           TextFormField(
                             controller: _passwordController,
                             obscureText: _obscurePassword,
+                            textInputAction: TextInputAction.done,
+                            onFieldSubmitted: (_) {
+                              // Ejecutar login al presionar Enter
+                              _handleLogin();
+                            },
                             decoration: InputDecoration(
                               labelText: 'Contraseña',
                               hintText: 'Ingresa tu contraseña',

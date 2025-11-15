@@ -19,6 +19,7 @@ import '../../../domain/services/avatar_service.dart';
 import '../../../app/config/avatar_catalog.dart';
 import '../../../domain/models/avatar_part_item.dart';
 import '../../widgets/avatar_asset.dart';
+import '../../../app/utils/responsive_utils.dart';
 
 class AvatarShopScreen extends StatefulWidget {
   const AvatarShopScreen({super.key});
@@ -76,17 +77,16 @@ class _AvatarShopScreenState extends State<AvatarShopScreen> {
                   ),
                   child: Column(
                     children: [
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
 
-                      // Selector de categoría
-                      SizedBox(
-                        height: 80,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemCount: AvatarCatalog.categories.length,
-                          itemBuilder: (context, index) {
-                            final category = AvatarCatalog.categories[index];
+                      // Selector de categoría (centrado con Wrap)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Wrap(
+                          alignment: WrapAlignment.center,
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: AvatarCatalog.categories.map((category) {
                             final isSelected = _selectedCategory == category;
 
                             return GestureDetector(
@@ -96,28 +96,27 @@ class _AvatarShopScreenState extends State<AvatarShopScreen> {
                                 });
                               },
                               child: Container(
-                                margin: const EdgeInsets.only(right: 12),
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                 decoration: BoxDecoration(
                                   color: isSelected ? AppColors.primary : Colors.grey.shade100,
-                                  borderRadius: BorderRadius.circular(16),
+                                  borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
                                     color: isSelected ? AppColors.primary : Colors.grey.shade300,
                                     width: 2,
                                   ),
                                 ),
                                 child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Text(
                                       AvatarCatalog.getCategoryIcon(category),
-                                      style: const TextStyle(fontSize: 24),
+                                      style: const TextStyle(fontSize: 20),
                                     ),
-                                    const SizedBox(height: 4),
+                                    const SizedBox(height: 2),
                                     Text(
                                       AvatarCatalog.getCategoryName(category),
                                       style: GoogleFonts.fredoka(
-                                        fontSize: 12,
+                                        fontSize: 10,
                                         fontWeight: FontWeight.w600,
                                         color: isSelected ? Colors.white : AppColors.textPrimary,
                                       ),
@@ -126,11 +125,14 @@ class _AvatarShopScreenState extends State<AvatarShopScreen> {
                                 ),
                               ),
                             );
-                          },
+                          }).toList(),
                         ),
                       ),
 
-                      const Divider(height: 24),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                        child: Divider(height: 1),
+                      ),
 
                       // Lista de items
                       Expanded(
@@ -232,32 +234,64 @@ class _AvatarShopScreenState extends State<AvatarShopScreen> {
               userCoins = data?['coins'] as int? ?? 0;
             }
 
-            return SizedBox(
-              height: 140,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                itemCount: allParts.length,
-                itemBuilder: (context, index) {
-                  final part = allParts[index];
-                  final isUnlocked = unlockedIds.contains(part.id);
-                  final canAfford = userCoins >= part.price;
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                // Grid responsive según ancho de pantalla
+                final crossAxisCount = getGridCrossAxisCount(
+                  constraints.maxWidth,
+                  minItemWidth: 150,
+                );
 
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: SizedBox(
-                      width: 110,
-                      height: 120,
-                      child: _buildShopItem(
+                // Tamaño de imagen adaptativo
+                final imageSize = context.responsive(
+                  mobile: 140.0,
+                  tablet: 180.0,
+                  desktop: 210.0,
+                );
+
+                return Scrollbar(
+                  thumbVisibility: true,
+                  thickness: 8,
+                  radius: const Radius.circular(4),
+                  child: GridView.builder(
+                    padding: EdgeInsets.fromLTRB(
+                      context.responsive(mobile: 16.0, tablet: 24.0, desktop: 32.0),
+                      8,
+                      context.responsive(mobile: 24.0, tablet: 32.0, desktop: 40.0),
+                      16,
+                    ),
+                    physics: const BouncingScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      crossAxisSpacing: context.responsive(
+                        mobile: 8.0,
+                        tablet: 12.0,
+                        desktop: 16.0,
+                      ),
+                      mainAxisSpacing: context.responsive(
+                        mobile: 8.0,
+                        tablet: 12.0,
+                        desktop: 16.0,
+                      ),
+                      childAspectRatio: 0.9,
+                    ),
+                    itemCount: allParts.length,
+                    itemBuilder: (context, index) {
+                      final part = allParts[index];
+                      final isUnlocked = unlockedIds.contains(part.id);
+                      final canAfford = userCoins >= part.price;
+
+                      return _buildShopItem(
                         part: part,
                         isUnlocked: isUnlocked,
                         canAfford: canAfford,
                         userId: userId,
-                      ),
-                    ),
-                  );
-                },
-              ),
+                        imageSize: imageSize,
+                      );
+                    },
+                  ),
+                );
+              },
             );
           },
         );
@@ -270,6 +304,7 @@ class _AvatarShopScreenState extends State<AvatarShopScreen> {
     required bool isUnlocked,
     required bool canAfford,
     required String userId,
+    required double imageSize,
   }) {
     return GestureDetector(
       onTap: isUnlocked || part.isDefault
@@ -292,8 +327,8 @@ class _AvatarShopScreenState extends State<AvatarShopScreen> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 6,
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 4,
               offset: const Offset(0, 2),
             ),
           ],
@@ -301,15 +336,21 @@ class _AvatarShopScreenState extends State<AvatarShopScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Emoji
-            _PartThumbnail(part: part, size: 48),
-            const SizedBox(height: 4),
+            const Spacer(flex: 1),
+            // Imagen RESPONSIVE - se adapta al tamaño del dispositivo
+            Expanded(
+              flex: 9,
+              child: Center(
+                child: _PartThumbnail(part: part, size: imageSize),
+              ),
+            ),
+            const SizedBox(height: 6),
 
-            // Nombre
+            // Nombre más grande y legible
             Text(
               part.name,
               style: GoogleFonts.fredoka(
-                fontSize: 11,
+                fontSize: 13,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
               ),
@@ -317,25 +358,25 @@ class _AvatarShopScreenState extends State<AvatarShopScreen> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
 
-            // Estado/Precio
+            // Estado/Precio más visible
             if (isUnlocked || part.isDefault)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
                   color: Colors.green,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.check_circle, color: Colors.white, size: 12),
-                    const SizedBox(width: 3),
+                    const Icon(Icons.check_circle, color: Colors.white, size: 14),
+                    const SizedBox(width: 4),
                     Text(
                       'Comprado',
                       style: GoogleFonts.fredoka(
-                        fontSize: 11,
+                        fontSize: 12,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
@@ -345,10 +386,10 @@ class _AvatarShopScreenState extends State<AvatarShopScreen> {
               )
             else
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
                   color: canAfford ? Colors.orange : Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -356,13 +397,13 @@ class _AvatarShopScreenState extends State<AvatarShopScreen> {
                     Icon(
                       Icons.monetization_on,
                       color: canAfford ? Colors.white : Colors.grey.shade600,
-                      size: 12,
+                      size: 14,
                     ),
                     const SizedBox(width: 3),
                     Text(
                       '${part.price}',
                       style: GoogleFonts.fredoka(
-                        fontSize: 11,
+                        fontSize: 13,
                         fontWeight: FontWeight.bold,
                         color: canAfford ? Colors.white : Colors.grey.shade600,
                       ),
@@ -370,6 +411,7 @@ class _AvatarShopScreenState extends State<AvatarShopScreen> {
                   ],
                 ),
               ),
+            const Spacer(flex: 1),
           ],
         ),
       ),
@@ -381,46 +423,75 @@ class _AvatarShopScreenState extends State<AvatarShopScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
         ),
         title: Text(
           canAfford ? '¿Comprar ${part.name}?' : 'Monedas Insuficientes',
-          style: GoogleFonts.fredoka(fontWeight: FontWeight.bold),
+          style: GoogleFonts.fredoka(
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+          ),
+          textAlign: TextAlign.center,
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _PartThumbnail(part: part, size: 96),
-            const SizedBox(height: 16),
+            _PartThumbnail(part: part, size: 120),
+            const SizedBox(height: 20),
             Text(
               part.description,
-              style: GoogleFonts.fredoka(fontSize: 14),
+              style: GoogleFonts.fredoka(
+                fontSize: 16,
+                color: AppColors.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.monetization_on, color: Colors.orange),
-                const SizedBox(width: 8),
-                Text(
-                  '${part.price} monedas',
-                  style: GoogleFonts.fredoka(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade50,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.orange, width: 2),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.monetization_on,
+                    color: Colors.orange,
+                    size: 28,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 12),
+                  Text(
+                    '${part.price} monedas',
+                    style: GoogleFonts.fredoka(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.orange.shade900,
+                    ),
+                  ),
+                ],
+              ),
             ),
             if (!canAfford) ...[
-              const SizedBox(height: 16),
-              Text(
-                '¡Necesitas más monedas!\nJuega minijuegos para ganar más.',
-                style: GoogleFonts.fredoka(
-                  fontSize: 14,
-                  color: Colors.red,
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                textAlign: TextAlign.center,
+                child: Text(
+                  '¡Necesitas más monedas!\nJuega minijuegos para ganar más.',
+                  style: GoogleFonts.fredoka(
+                    fontSize: 16,
+                    color: Colors.red.shade700,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ),
             ],
           ],
@@ -428,31 +499,42 @@ class _AvatarShopScreenState extends State<AvatarShopScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
             child: Text(
               'Cancelar',
-              style: GoogleFonts.fredoka(color: AppColors.textSecondary),
+              style: GoogleFonts.fredoka(
+                color: AppColors.textSecondary,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
-          if (canAfford)
-            ElevatedButton(
-              onPressed: () async {
-                Navigator.pop(dialogContext);
-                await _purchasePart(part, userId);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+          ElevatedButton(
+            onPressed: canAfford
+                ? () async {
+                    Navigator.pop(dialogContext);
+                    await _purchasePart(part, userId);
+                  }
+                : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: canAfford ? AppColors.primary : Colors.grey.shade300,
+              foregroundColor: canAfford ? Colors.white : Colors.grey.shade600,
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-              child: Text(
-                'Comprar',
-                style: GoogleFonts.fredoka(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
+              elevation: canAfford ? 4 : 0,
+            ),
+            child: Text(
+              'Comprar',
+              style: GoogleFonts.fredoka(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
             ),
+          ),
         ],
       ),
     );

@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 /// Widget auxiliar que carga assets del catálogo de avatar soportando
@@ -33,8 +33,7 @@ class AvatarAsset extends StatelessWidget {
         width: width,
         height: height,
         fit: fit,
-        placeholderBuilder:
-            placeholder != null ? (_) => placeholder! : null,
+        placeholderBuilder: placeholder != null ? (_) => placeholder! : null,
       );
     }
 
@@ -43,6 +42,26 @@ class AvatarAsset extends StatelessWidget {
       width: width,
       height: height,
       fit: fit,
+      errorBuilder: (context, error, stackTrace) {
+        // SILENCIAR ERROR: retornar contenedor vacío transparente
+        // Esto evita que aparezca el texto amarillo de error
+        return SizedBox(
+          width: width,
+          height: height,
+          child: placeholder ?? const SizedBox.shrink(),
+        );
+      },
+      // Deshabilitar el mensaje de error en consola
+      frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+        if (frame == null) {
+          return SizedBox(
+            width: width,
+            height: height,
+            child: placeholder ?? const SizedBox.shrink(),
+          );
+        }
+        return child;
+      },
     );
   }
 }

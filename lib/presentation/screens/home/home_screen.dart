@@ -19,6 +19,7 @@ import '../../bloc/auth/auth_state.dart';
 import '../../../app/theme/colors.dart';
 import '../../../domain/services/avatar_service.dart';
 import '../../widgets/avatar_widget.dart';
+import '../../../app/utils/responsive_utils.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -245,10 +246,12 @@ class HomeScreen extends StatelessWidget {
 
         return Row(
           children: [
-            // Tarjeta de puntuación
+            // Tarjeta de puntuación responsive
             Expanded(
               child: Container(
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(
+                  context.responsive(mobile: 16.0, tablet: 18.0, desktop: 20.0),
+                ),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFFFFA726), Color(0xFFFF9800)],
@@ -267,32 +270,51 @@ class HomeScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.star, color: Colors.white, size: 32),
-                        const SizedBox(width: 8),
+                        Icon(
+                          Icons.star,
+                          color: Colors.white,
+                          size: context.responsive(mobile: 24.0, tablet: 28.0, desktop: 32.0),
+                        ),
+                        SizedBox(width: context.responsive(mobile: 6.0, tablet: 7.0, desktop: 8.0)),
                         Text(
                           'Mis Puntos',
                           style: GoogleFonts.fredoka(
-                            fontSize: 18,
+                            fontSize: getResponsiveFontSize(
+                              context,
+                              mobile: 15.0,
+                              tablet: 16.5,
+                              desktop: 18.0,
+                            ),
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: context.responsive(mobile: 8.0, tablet: 10.0, desktop: 12.0)),
                     Text(
                       '$totalScore',
                       style: GoogleFonts.fredoka(
-                        fontSize: 48,
+                        fontSize: getResponsiveFontSize(
+                          context,
+                          mobile: 36.0,
+                          tablet: 42.0,
+                          desktop: 48.0,
+                        ),
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: context.responsive(mobile: 2.0, tablet: 3.0, desktop: 4.0)),
                     Text(
                       '$gamesPlayed juegos jugados',
                       style: GoogleFonts.fredoka(
-                        fontSize: 14,
+                        fontSize: getResponsiveFontSize(
+                          context,
+                          mobile: 11.0,
+                          tablet: 12.5,
+                          desktop: 14.0,
+                        ),
                         color: Colors.white.withValues(alpha: 0.9),
                       ),
                     ),
@@ -303,12 +325,19 @@ class HomeScreen extends StatelessWidget {
 
             const SizedBox(width: 16),
 
-            // Botón de ranking
+            // Botón de ranking responsive
             GestureDetector(
               onTap: () => context.push('/ranking'),
               child: Container(
-                width: 140,
-                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                width: context.responsive(
+                  mobile: 120.0,
+                  tablet: 130.0,
+                  desktop: 140.0,
+                ),
+                padding: EdgeInsets.symmetric(
+                  vertical: context.responsive(mobile: 16.0, tablet: 18.0, desktop: 20.0),
+                  horizontal: context.responsive(mobile: 12.0, tablet: 14.0, desktop: 16.0),
+                ),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFF42A5F5), Color(0xFF2196F3)],
@@ -383,6 +412,33 @@ class HomeScreen extends StatelessWidget {
       },
     ];
 
+    // En móvil: Grid de 2 columnas, en desktop: Row horizontal
+    if (context.isMobile) {
+      return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: 0.75,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+        ),
+        itemCount: categories.length,
+        itemBuilder: (context, index) {
+          final category = categories[index];
+          return _buildCategoryCard(
+            context,
+            id: category['id'] as String,
+            title: category['title'] as String,
+            description: category['description'] as String,
+            icon: category['icon'] as IconData,
+            gradient: category['gradient'] as List<Color>,
+          );
+        },
+      );
+    }
+
+    // Desktop: Row horizontal
     return Row(
       children: categories.asMap().entries.map((entry) {
         final index = entry.key;
@@ -418,7 +474,11 @@ class HomeScreen extends StatelessWidget {
         context.push('/games/$id');
       },
       child: Container(
-        height: 280,
+        height: context.responsive(
+          mobile: 220.0,
+          tablet: 250.0,
+          desktop: 280.0,
+        ),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -435,49 +495,62 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(
+            context.responsive(mobile: 16.0, tablet: 20.0, desktop: 24.0),
+          ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Icono grande
+              // Icono grande responsive
               Container(
-                width: 100,
-                height: 100,
+                width: context.responsive(mobile: 60.0, tablet: 80.0, desktop: 100.0),
+                height: context.responsive(mobile: 60.0, tablet: 80.0, desktop: 100.0),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.25),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   icon,
-                  size: 56,
+                  size: context.responsive(mobile: 32.0, tablet: 44.0, desktop: 56.0),
                   color: Colors.white,
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: context.responsive(mobile: 12.0, tablet: 16.0, desktop: 20.0)),
 
-              // Título grande
+              // Título grande responsive
               Text(
                 title,
                 style: GoogleFonts.fredoka(
-                  fontSize: 24,
+                  fontSize: getResponsiveFontSize(
+                    context,
+                    mobile: 18.0,
+                    tablet: 21.0,
+                    desktop: 24.0,
+                  ),
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                   letterSpacing: 0.5,
+                  height: 1.1,
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: context.responsive(mobile: 6.0, tablet: 7.0, desktop: 8.0)),
 
-              // Descripción
+              // Descripción responsive
               Text(
                 description,
                 style: GoogleFonts.fredoka(
-                  fontSize: 15,
+                  fontSize: getResponsiveFontSize(
+                    context,
+                    mobile: 12.0,
+                    tablet: 13.5,
+                    desktop: 15.0,
+                  ),
                   color: Colors.white.withValues(alpha: 0.95),
-                  height: 1.3,
+                  height: 1.2,
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 2,

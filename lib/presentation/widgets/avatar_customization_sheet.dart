@@ -7,9 +7,7 @@
 /// Fecha: 2025
 
 import 'dart:math' as math;
-import 'dart:ui';
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -20,6 +18,7 @@ import '../../domain/models/avatar_part_item.dart';
 import '../../domain/services/avatar_service.dart';
 import 'avatar_asset.dart';
 import 'avatar_widget.dart';
+import '../../app/utils/responsive_utils.dart';
 
 class AvatarCustomizationSheet extends StatefulWidget {
   final AvatarModel avatar;
@@ -125,6 +124,35 @@ class _AvatarCustomizationSheetState extends State<AvatarCustomizationSheet> {
     }
   }
 
+  List<String> _getUnlockedList(String category) {
+    switch (category) {
+      case 'face':
+        return _currentAvatar.unlockedFaces;
+      case 'body':
+        return _currentAvatar.unlockedBodies;
+      case 'eyes':
+        return _currentAvatar.unlockedEyes;
+      case 'mouth':
+        return _currentAvatar.unlockedMouths;
+      case 'hair':
+        return _currentAvatar.unlockedHairs;
+      case 'top':
+        return _currentAvatar.unlockedTops;
+      case 'bottom':
+        return _currentAvatar.unlockedBottoms;
+      case 'shoes':
+        return _currentAvatar.unlockedShoes;
+      case 'hands':
+        return _currentAvatar.unlockedHands;
+      case 'accessory':
+        return _currentAvatar.unlockedAccessories;
+      case 'background':
+        return _currentAvatar.unlockedBackgrounds;
+      default:
+        return [];
+    }
+  }
+
   // --- ÚNICA definición: usa el widget separado para el carrusel de categorías.
   Widget _buildCategorySelector() {
     return _AvatarCategoryCarousel(
@@ -142,10 +170,12 @@ class _AvatarCustomizationSheetState extends State<AvatarCustomizationSheet> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final double availableWidth = size.width - 32;
+    // Modal más compacto que se adapta al contenido
     final double resolvedWidth = availableWidth.isFinite
-        ? availableWidth.clamp(280.0, 720.0).toDouble()
-        : 720.0;
-    final double resolvedHeight = math.min(size.height * 0.85, 640.0);
+        ? availableWidth.clamp(320.0, 900.0).toDouble()
+        : 900.0;
+    // Altura ajustada para contenido más compacto
+    final double resolvedHeight = math.min(size.height * 0.85, 680.0);
 
     return Center(
       child: ConstrainedBox(
@@ -185,7 +215,7 @@ class _AvatarCustomizationSheetState extends State<AvatarCustomizationSheet> {
                 ),
               ),
 
-              // Vista previa del avatar
+              // Vista previa del avatar (compacta)
               StreamBuilder<AvatarModel?>(
                 stream: _avatarService.avatarStream(widget.userId),
                 builder: (context, snapshot) {
@@ -197,7 +227,7 @@ class _AvatarCustomizationSheetState extends State<AvatarCustomizationSheet> {
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: AvatarWidget(
                       avatar: _currentAvatar,
-                      size: 140,
+                      size: 100,
                       animate: false,
                     ),
                   );
@@ -213,7 +243,7 @@ class _AvatarCustomizationSheetState extends State<AvatarCustomizationSheet> {
               ),
 
               const Padding(
-                padding: EdgeInsets.symmetric(vertical: 12),
+                padding: EdgeInsets.symmetric(vertical: 8),
                 child: Divider(height: 1),
               ),
 
@@ -232,8 +262,13 @@ class _AvatarCustomizationSheetState extends State<AvatarCustomizationSheet> {
 
   Widget _buildPartsList() {
     final currentPart = _getCurrentPart(_selectedCategory);
-    final availableParts =
-        AvatarCatalog.getPartsByCategory(_selectedCategory).toList();
+    final unlockedIds = _getUnlockedList(_selectedCategory);
+
+    // Filtrar solo las partes desbloqueadas o por defecto
+    final allParts = AvatarCatalog.getPartsByCategory(_selectedCategory);
+    final availableParts = allParts.where((part) {
+      return part.isDefault || unlockedIds.contains(part.id);
+    }).toList();
 
     if (availableParts.isEmpty) {
       return Center(
@@ -241,35 +276,72 @@ class _AvatarCustomizationSheetState extends State<AvatarCustomizationSheet> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(
-              Icons.inventory_2_outlined,
+              Icons.lock_outline,
               size: 64,
               color: Colors.grey,
             ),
             const SizedBox(height: 16),
             Text(
-              'No hay elementos disponibles en esta categoría',
+              'No tienes accesorios desbloqueados',
               style: GoogleFonts.fredoka(
                 fontSize: 16,
+                fontWeight: FontWeight.bold,
                 color: Colors.grey.shade600,
               ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '¡Visita la tienda para comprar más!',
+              style: GoogleFonts.fredoka(
+                fontSize: 14,
+                color: Colors.grey.shade500,
+              ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
       );
     }
 
-    return GridView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        childAspectRatio: 0.9,
-      ),
-      itemCount: availableParts.length,
-      itemBuilder: (context, index) {
-        final part = availableParts[index];
-        final isSelected = currentPart == part.id;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Grid responsive según ancho de pantalla
+        final crossAxisCount = getGridCrossAxisCount(
+          constraints.maxWidth,
+          minItemWidth: 120,
+        );
+
+        return Scrollbar(
+          thumbVisibility: true,
+          thickness: 8,
+          radius: const Radius.circular(4),
+          child: GridView.builder(
+            padding: EdgeInsets.fromLTRB(
+              context.responsive(mobile: 16.0, tablet: 24.0, desktop: 32.0),
+              12,
+              context.responsive(mobile: 24.0, tablet: 32.0, desktop: 40.0),
+              12,
+            ),
+            physics: const BouncingScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              crossAxisSpacing: context.responsive(
+                mobile: 8.0,
+                tablet: 12.0,
+                desktop: 16.0,
+              ),
+              mainAxisSpacing: context.responsive(
+                mobile: 8.0,
+                tablet: 12.0,
+                desktop: 16.0,
+              ),
+              childAspectRatio: 0.9,
+            ),
+            itemCount: availableParts.length,
+            itemBuilder: (context, index) {
+              final part = availableParts[index];
+              final isSelected = currentPart == part.id;
 
         return GestureDetector(
           onTap: () {
@@ -289,42 +361,61 @@ class _AvatarCustomizationSheetState extends State<AvatarCustomizationSheet> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _PartPreview(part: part),
-                const SizedBox(height: 8),
-                Text(
-                  part.name,
-                  style: GoogleFonts.fredoka(
-                    fontSize: 13,
-                    fontWeight: isSelected
-                        ? FontWeight.bold
-                        : FontWeight.w600,
-                    color: isSelected
-                        ? AppColors.primary
-                        : AppColors.textSecondary,
+                const Spacer(flex: 1),
+                // Imagen AMPLIADA 50% para mejor visualización infantil
+                Expanded(
+                  flex: 8,
+                  child: Center(
+                    child: _PartPreview(part: part),
                   ),
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
+                const SizedBox(height: 6),
+                // Texto compacto
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Text(
+                    part.name,
+                    style: GoogleFonts.fredoka(
+                      fontSize: 11,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.w600,
+                      color: isSelected
+                          ? AppColors.primary
+                          : AppColors.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                // Badge compacto
                 if (isSelected)
                   Container(
-                    margin: const EdgeInsets.only(top: 6),
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    margin: const EdgeInsets.only(bottom: 2),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
                       color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       'Equipado',
                       style: GoogleFonts.fredoka(
-                        fontSize: 10,
+                        fontSize: 9,
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ),
+                  )
+                else
+                  const SizedBox(height: 2),
+                const Spacer(flex: 1),
               ],
             ),
+          ),
+        );
+            },
           ),
         );
       },
@@ -340,6 +431,14 @@ class _PartPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
+    // Tamaño responsive de imagen
+    final imageSize = context.responsive(
+      mobile: 80.0,
+      tablet: 95.0,
+      desktop: 105.0,
+    );
+
     final fallback = Text(
       part.emoji == null || part.emoji!.isEmpty ? '🎨' : part.emoji!,
       style: theme.textTheme.displaySmall?.copyWith(fontSize: 52),
@@ -349,14 +448,12 @@ class _PartPreview extends StatelessWidget {
       return fallback;
     }
 
-    return Center(
-      child: AvatarAsset(
-        assetPath: part.assetPath,
-        width: 80,
-        height: 80,
-        fit: BoxFit.contain,
-        placeholder: fallback,
-      ),
+    return AvatarAsset(
+      assetPath: part.assetPath,
+      width: imageSize,
+      height: imageSize,
+      fit: BoxFit.contain,
+      placeholder: fallback,
     );
   }
 }
@@ -372,72 +469,38 @@ class _AvatarCategoryCarousel extends StatelessWidget {
     required this.onCategorySelected,
   });
 
-  static const double _buttonDelta = 160;
-
-  void _scrollCategories(double delta) {
-    if (!controller.hasClients) return;
-
-    final ScrollPosition position = controller.position;
-    final double target =
-        (controller.offset + delta).clamp(0.0, position.maxScrollExtent);
-
-    if (target == controller.offset) return;
-
-    controller.animateTo(
-      target,
-      duration: const Duration(milliseconds: 220),
-      curve: Curves.easeOut,
-    );
-  }
-
-  void _handleCategoryPointerSignal(PointerSignalEvent event) {
-    if (event is! PointerScrollEvent || !controller.hasClients) return;
-
-    final ScrollPosition position = controller.position;
-    final Offset delta = event.scrollDelta;
-    final double rawDelta = delta.dy.abs() > delta.dx.abs() ? delta.dy : delta.dx;
-
-    if (rawDelta == 0) return;
-
-    final double target =
-        (controller.offset + rawDelta).clamp(0.0, position.maxScrollExtent);
-
-    if (target != controller.offset) {
-      controller.jumpTo(target);
-    }
-  }
-
   Widget _buildCategoryChip(BuildContext context, String category) {
     final bool isSelected = selectedCategory == category;
     final Color chipColor = isSelected ? AppColors.primary : Colors.grey.shade100;
 
     return Material(
       color: chipColor,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(12),
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         onTap: () => onCategorySelected(category),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected ? AppColors.primary : Colors.grey.shade300,
               width: 2,
             ),
           ),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 AvatarCatalog.getCategoryIcon(category),
-                style: const TextStyle(fontSize: 24),
+                style: const TextStyle(fontSize: 20),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 AvatarCatalog.getCategoryName(category),
                 style: GoogleFonts.fredoka(
-                  fontSize: 12,
+                  fontSize: 10,
                   fontWeight: FontWeight.w600,
                   color: isSelected ? Colors.white : AppColors.textPrimary,
                 ),
@@ -449,72 +512,17 @@ class _AvatarCategoryCarousel extends StatelessWidget {
     );
   }
 
-  Widget _buildScrollButton({
-    required IconData icon,
-    required double delta,
-  }) {
-    return SizedBox(
-      width: 36,
-      child: AnimatedBuilder(
-        animation: controller,
-        builder: (context, _) {
-          final ScrollController ctrl = controller;
-          final bool canScroll = ctrl.hasClients &&
-              ((delta < 0 && ctrl.offset > 0) ||
-                  (delta > 0 && ctrl.offset < ctrl.position.maxScrollExtent));
-
-          return IconButton(
-            icon: Icon(icon, size: 24),
-            color: canScroll ? AppColors.primary : Colors.grey.shade400,
-            tooltip: delta < 0 ? 'Ver anteriores' : 'Ver siguientes',
-            onPressed: canScroll ? () => _scrollCategories(delta) : null,
-          );
-        },
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 88,
-      child: Row(
-        children: [
-          _buildScrollButton(icon: Icons.chevron_left, delta: -_buttonDelta),
-          Expanded(
-            child: ScrollConfiguration(
-              behavior: ScrollConfiguration.of(context).copyWith(
-                dragDevices: const {
-                  PointerDeviceKind.touch,
-                  PointerDeviceKind.mouse,
-                  PointerDeviceKind.trackpad,
-                  PointerDeviceKind.stylus,
-                },
-              ),
-              child: Listener(
-                onPointerSignal: _handleCategoryPointerSignal,
-                child: Scrollbar(
-                  controller: controller,
-                  thumbVisibility: true,
-                  interactive: true,
-                  child: ListView.separated(
-                    controller: controller,
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: AvatarCatalog.categories.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 12),
-                    itemBuilder: (context, index) {
-                      final category = AvatarCatalog.categories[index];
-                      return _buildCategoryChip(context, category);
-                    },
-                  ),
-                ),
-              ),
-            ),
-          ),
-          _buildScrollButton(icon: Icons.chevron_right, delta: _buttonDelta),
-        ],
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 8,
+        runSpacing: 8,
+        children: AvatarCatalog.categories.map((category) {
+          return _buildCategoryChip(context, category);
+        }).toList(),
       ),
     );
   }

@@ -18,6 +18,7 @@ import '../../../domain/models/avatar_model.dart';
 import '../../../domain/services/avatar_service.dart';
 import '../../widgets/avatar_widget.dart';
 import '../../widgets/avatar_customization_sheet.dart';
+import '../../../app/utils/responsive_utils.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -193,28 +194,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         constraints: const BoxConstraints(maxWidth: 800),
                         child: SingleChildScrollView(
                           padding: const EdgeInsets.all(16),
-                          child: IntrinsicHeight(
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                // Recuadro del Avatar (izquierda) - ocupa toda la altura
-                                _buildAvatarCard(user.uid),
-                                const SizedBox(width: 16),
-                                // Columna derecha con toda la información
-                                Expanded(
-                                  child: Column(
-                                    children: [
-                                      _buildProfileCard(username as String, totalScore, coins, gamesPlayed, user.uid),
-                                      const SizedBox(height: 16),
-                                      _buildStatsCards(totalScore, coins, gamesPlayed),
-                                      const SizedBox(height: 16),
-                                      _buildRankingCard(user.uid),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                          child: context.isMobile
+                              ? _buildMobileLayout(username as String, totalScore, coins, gamesPlayed, user.uid)
+                              : _buildDesktopLayout(username as String, totalScore, coins, gamesPlayed, user.uid),
                         ),
                       ),
                     ),
@@ -283,13 +265,62 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Recuadro del Avatar (izquierda)
+  // Layout para MÓVIL: Información primero, avatar al final
+  Widget _buildMobileLayout(String username, int totalScore, int coins, int gamesPlayed, String userId) {
+    return Column(
+      children: [
+        // 1. Información del usuario primero
+        _buildProfileCard(username, totalScore, coins, gamesPlayed, userId),
+        const SizedBox(height: 16),
+
+        // 2. Estadísticas
+        _buildStatsCards(totalScore, coins, gamesPlayed),
+        const SizedBox(height: 16),
+
+        // 3. Ranking
+        _buildRankingCard(userId),
+        const SizedBox(height: 16),
+
+        // 4. Avatar al FINAL
+        _buildAvatarCard(userId),
+      ],
+    );
+  }
+
+  // Layout para DESKTOP: Avatar izquierda, información derecha
+  Widget _buildDesktopLayout(String username, int totalScore, int coins, int gamesPlayed, String userId) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Recuadro del Avatar (izquierda) - ocupa toda la altura
+          _buildAvatarCard(userId),
+          const SizedBox(width: 16),
+          // Columna derecha con toda la información
+          Expanded(
+            child: Column(
+              children: [
+                _buildProfileCard(username, totalScore, coins, gamesPlayed, userId),
+                const SizedBox(height: 16),
+                _buildStatsCards(totalScore, coins, gamesPlayed),
+                const SizedBox(height: 16),
+                _buildRankingCard(userId),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Recuadro del Avatar (responsive)
   Widget _buildAvatarCard(String userId) {
     final avatarService = AvatarService();
+    final isMobile = context.isMobile;
 
     return Container(
-      width: 250,
-      padding: const EdgeInsets.all(24),
+      width: isMobile ? double.infinity : 250,
+      padding: EdgeInsets.all(isMobile ? 20.0 : 24.0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
