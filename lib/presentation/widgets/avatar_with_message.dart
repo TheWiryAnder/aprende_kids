@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../app/constants/avatar_mood.dart';
 import '../../app/constants/motivational_messages.dart';
-import '../bloc/user/user_bloc.dart';
-import '../bloc/user/user_state.dart';
-import 'avatar_asset.dart';
+import 'avatar_widget.dart';
 import 'avatar_message_bubble.dart';
 
 /// Widget que muestra el avatar del usuario con un mensaje motivacional
@@ -35,61 +33,58 @@ class _AvatarWithMessageState extends State<AvatarWithMessage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<UserBloc, UserState>(
-      builder: (context, state) {
-        if (state is! UserLoaded) {
-          return const SizedBox.shrink();
-        }
+    final user = FirebaseAuth.instance.currentUser;
 
-        final message = widget.customMessage ??
-            MotivationalMessages.getMessage(
-              widget.mood,
-              userName: widget.userName,
-            );
+    if (user == null) {
+      return const SizedBox.shrink();
+    }
 
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Mensaje en burbuja
-            if (widget.showMessage && _showBubble)
-              AvatarMessageBubble(
-                message: message,
-                duration: widget.messageDuration,
-                onDismiss: () {
-                  if (mounted) {
-                    setState(() {
-                      _showBubble = false;
-                    });
-                  }
-                },
-                backgroundColor: _getBackgroundColor(),
-                textColor: _getTextColor(),
-              ),
-            if (widget.showMessage && _showBubble) const SizedBox(height: 8),
-
-            // Avatar del usuario
-            SizedBox(
-              width: widget.avatarSize,
-              height: widget.avatarSize,
-              child: AvatarAsset(
-                userId: state.user.uid,
-                size: widget.avatarSize,
-                // Agregar animación según el mood
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: _getMoodColor().withValues(alpha: 0.3),
-                      blurRadius: 15,
-                      spreadRadius: 2,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+    final message = widget.customMessage ??
+        MotivationalMessages.getMessage(
+          widget.mood,
+          userName: widget.userName,
         );
-      },
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Mensaje en burbuja
+        if (widget.showMessage && _showBubble)
+          AvatarMessageBubble(
+            message: message,
+            duration: widget.messageDuration,
+            onDismiss: () {
+              if (mounted) {
+                setState(() {
+                  _showBubble = false;
+                });
+              }
+            },
+            backgroundColor: _getBackgroundColor(),
+            textColor: _getTextColor(),
+          ),
+        if (widget.showMessage && _showBubble) const SizedBox(height: 8),
+
+        // Avatar del usuario con resplandor según mood
+        Container(
+          width: widget.avatarSize,
+          height: widget.avatarSize,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: _getMoodColor().withValues(alpha: 0.3),
+                blurRadius: 15,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: AvatarWidget(
+            userId: user.uid,
+            size: widget.avatarSize,
+          ),
+        ),
+      ],
     );
   }
 
