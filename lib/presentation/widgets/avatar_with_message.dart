@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../app/constants/avatar_mood.dart';
 import '../../app/constants/motivational_messages.dart';
+import '../../domain/models/avatar_model.dart';
 import 'avatar_widget.dart';
 import 'avatar_message_bubble.dart';
 
@@ -45,46 +47,67 @@ class _AvatarWithMessageState extends State<AvatarWithMessage> {
           userName: widget.userName,
         );
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Mensaje en burbuja
-        if (widget.showMessage && _showBubble)
-          AvatarMessageBubble(
-            message: message,
-            duration: widget.messageDuration,
-            onDismiss: () {
-              if (mounted) {
-                setState(() {
-                  _showBubble = false;
-                });
-              }
-            },
-            backgroundColor: _getBackgroundColor(),
-            textColor: _getTextColor(),
-          ),
-        if (widget.showMessage && _showBubble) const SizedBox(height: 8),
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || !snapshot.data!.exists) {
+          return const SizedBox.shrink();
+        }
 
-        // Avatar del usuario con resplandor según mood
-        Container(
-          width: widget.avatarSize,
-          height: widget.avatarSize,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: _getMoodColor().withValues(alpha: 0.3),
-                blurRadius: 15,
-                spreadRadius: 2,
+        final userData = snapshot.data!.data() as Map<String, dynamic>;
+        final avatarData = userData['avatar'] as Map<String, dynamic>?;
+
+        if (avatarData == null) {
+          return const SizedBox.shrink();
+        }
+
+        final avatar = AvatarModel.fromMap(avatarData);
+
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Mensaje en burbuja
+            if (widget.showMessage && _showBubble)
+              AvatarMessageBubble(
+                message: message,
+                duration: widget.messageDuration,
+                onDismiss: () {
+                  if (mounted) {
+                    setState(() {
+                      _showBubble = false;
+                    });
+                  }
+                },
+                backgroundColor: _getBackgroundColor(),
+                textColor: _getTextColor(),
               ),
-            ],
-          ),
-          child: AvatarWidget(
-            userId: user.uid,
-            size: widget.avatarSize,
-          ),
-        ),
-      ],
+            if (widget.showMessage && _showBubble) const SizedBox(height: 8),
+
+            // Avatar del usuario con resplandor según mood
+            Container(
+              width: widget.avatarSize,
+              height: widget.avatarSize,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: _getMoodColor().withValues(alpha: 0.3),
+                    blurRadius: 15,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: AvatarWidget(
+                avatar: avatar,
+                size: widget.avatarSize,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
