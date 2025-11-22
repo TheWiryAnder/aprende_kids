@@ -53,15 +53,102 @@ class _AvatarWithMessageState extends State<AvatarWithMessage> {
           .doc(user.uid)
           .snapshots(),
       builder: (context, snapshot) {
-        if (!snapshot.hasData || !snapshot.data!.exists) {
-          return const SizedBox.shrink();
+        // Mostrar loading mientras carga
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (widget.showMessage && _showBubble)
+                AvatarMessageBubble(
+                  message: message,
+                  duration: widget.messageDuration,
+                  onDismiss: () {
+                    if (mounted) {
+                      setState(() {
+                        _showBubble = false;
+                      });
+                    }
+                  },
+                  backgroundColor: _getBackgroundColor(),
+                  textColor: _getTextColor(),
+                ),
+              if (widget.showMessage && _showBubble) const SizedBox(height: 8),
+              const CircularProgressIndicator(),
+            ],
+          );
         }
 
-        final userData = snapshot.data!.data() as Map<String, dynamic>;
+        if (!snapshot.hasData || !snapshot.data!.exists) {
+          // Si no hay datos, mostrar solo el mensaje sin avatar
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (widget.showMessage && _showBubble)
+                AvatarMessageBubble(
+                  message: message,
+                  duration: widget.messageDuration,
+                  onDismiss: () {
+                    if (mounted) {
+                      setState(() {
+                        _showBubble = false;
+                      });
+                    }
+                  },
+                  backgroundColor: _getBackgroundColor(),
+                  textColor: _getTextColor(),
+                ),
+            ],
+          );
+        }
+
+        final userData = snapshot.data!.data() as Map<String, dynamic>?;
+
+        if (userData == null) {
+          // Si no hay userData, mostrar solo mensaje
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (widget.showMessage && _showBubble)
+                AvatarMessageBubble(
+                  message: message,
+                  duration: widget.messageDuration,
+                  onDismiss: () {
+                    if (mounted) {
+                      setState(() {
+                        _showBubble = false;
+                      });
+                    }
+                  },
+                  backgroundColor: _getBackgroundColor(),
+                  textColor: _getTextColor(),
+                ),
+            ],
+          );
+        }
+
         final avatarData = userData['avatar'] as Map<String, dynamic>?;
 
         if (avatarData == null) {
-          return const SizedBox.shrink();
+          // Si no hay avatar, mostrar solo mensaje
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (widget.showMessage && _showBubble)
+                AvatarMessageBubble(
+                  message: message,
+                  duration: widget.messageDuration,
+                  onDismiss: () {
+                    if (mounted) {
+                      setState(() {
+                        _showBubble = false;
+                      });
+                    }
+                  },
+                  backgroundColor: _getBackgroundColor(),
+                  textColor: _getTextColor(),
+                ),
+            ],
+          );
         }
 
         final avatar = AvatarModel.fromMap(avatarData);
