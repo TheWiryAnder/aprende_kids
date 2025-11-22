@@ -20,6 +20,8 @@ import '../../../app/theme/colors.dart';
 import '../../../domain/services/avatar_service.dart';
 import '../../widgets/avatar_widget.dart';
 import '../../../app/utils/responsive_utils.dart';
+import '../../widgets/avatar_with_message.dart';
+import '../../../app/constants/avatar_mood.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -76,6 +78,18 @@ class HomeScreen extends StatelessWidget {
                           children: [
                             // Puntuación y Ranking
                             _buildScoreAndRanking(context),
+
+                            const SizedBox(height: 24),
+
+                            // Avatar con mensaje de bienvenida
+                            Center(
+                              child: AvatarWithMessage(
+                                mood: AvatarMood.greeting,
+                                userName: user.displayName,
+                                avatarSize: 100,
+                                messageDuration: const Duration(seconds: 5),
+                              ),
+                            ),
 
                             const SizedBox(height: 32),
 

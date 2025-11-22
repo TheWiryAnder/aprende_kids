@@ -23,6 +23,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:confetti/confetti.dart';
 import '../../../app/theme/colors.dart';
 import '../../../app/config/game_config.dart';
+import '../../widgets/avatar_with_message.dart';
+import '../../../app/constants/avatar_mood.dart';
 
 class GameResultsScreen extends StatefulWidget {
   final Map<String, dynamic> gameData;
@@ -177,6 +179,28 @@ class _GameResultsScreenState extends State<GameResultsScreen>
     return AppColors.mathColor; // Default
   }
 
+  AvatarMood _getMoodForResult() {
+    final accuracy = widget.gameData['accuracy'] as int;
+    final stars = _calculateStars();
+
+    // Victoria completa (3 estrellas)
+    if (stars >= 3) {
+      return AvatarMood.victory;
+    }
+    // Muy bien (2 estrellas)
+    else if (stars >= 2) {
+      return AvatarMood.celebration;
+    }
+    // Bien (1 estrella)
+    else if (stars >= 1) {
+      return AvatarMood.happy;
+    }
+    // Necesita mejorar (0 estrellas)
+    else {
+      return AvatarMood.encouraging;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final stars = _calculateStars();
@@ -262,6 +286,18 @@ class _GameResultsScreenState extends State<GameResultsScreen>
                     ),
 
                     const SizedBox(height: 32),
+
+                    // Avatar con mensaje motivacional
+                    FadeTransition(
+                      opacity: _animationController,
+                      child: AvatarWithMessage(
+                        mood: _getMoodForResult(),
+                        avatarSize: 120,
+                        messageDuration: const Duration(seconds: 6),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
 
                     // Tarjeta de resultados
                     SlideTransition(
