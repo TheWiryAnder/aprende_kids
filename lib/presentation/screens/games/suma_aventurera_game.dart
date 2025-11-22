@@ -20,6 +20,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../app/theme/colors.dart';
+import '../../../app/constants/avatar_mood.dart';
+import '../../widgets/avatar_message_overlay.dart';
 
 class SumaAventureraGame extends StatefulWidget {
   const SumaAventureraGame({super.key});
@@ -164,11 +166,25 @@ class _SumaAventureraGameState extends State<SumaAventureraGame> {
         int streakBonus = (_consecutiveCorrect > 1) ? (_consecutiveCorrect - 1) * 5 : 0;
 
         _currentScore += basePoints + timeBonus + streakBonus;
+
+        // Mostrar mensaje motivacional al responder correctamente
+        AvatarMessageOverlay.show(
+          context,
+          mood: AvatarMood.happy,
+          duration: const Duration(milliseconds: 1200),
+        );
       } else {
         _consecutiveCorrect = 0;
 
         // Penalización por respuesta incorrecta: -5 puntos
         _currentScore = (_currentScore - 5).clamp(0, double.infinity).toInt();
+
+        // Mostrar mensaje de ánimo al responder incorrectamente
+        AvatarMessageOverlay.show(
+          context,
+          mood: AvatarMood.encouraging,
+          duration: const Duration(milliseconds: 1200),
+        );
       }
     });
 

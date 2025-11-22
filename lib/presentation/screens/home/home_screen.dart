@@ -20,11 +20,18 @@ import '../../../app/theme/colors.dart';
 import '../../../domain/services/avatar_service.dart';
 import '../../widgets/avatar_widget.dart';
 import '../../../app/utils/responsive_utils.dart';
-import '../../widgets/avatar_with_message.dart';
+import '../../widgets/avatar_message_overlay.dart';
 import '../../../app/constants/avatar_mood.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  bool _hasShownWelcome = false;
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +48,19 @@ class HomeScreen extends StatelessWidget {
         }
 
         final user = state.user;
+
+        // Mostrar overlay de bienvenida solo la primera vez
+        if (!_hasShownWelcome) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            setState(() => _hasShownWelcome = true);
+            AvatarMessageOverlay.show(
+              context,
+              mood: AvatarMood.greeting,
+              userName: user.displayName,
+              duration: const Duration(seconds: 2),
+            );
+          });
+        }
 
         return Scaffold(
           body: Container(
@@ -78,18 +98,6 @@ class HomeScreen extends StatelessWidget {
                           children: [
                             // Puntuación y Ranking
                             _buildScoreAndRanking(context),
-
-                            const SizedBox(height: 24),
-
-                            // Avatar con mensaje de bienvenida
-                            Center(
-                              child: AvatarWithMessage(
-                                mood: AvatarMood.greeting,
-                                userName: user.displayName,
-                                avatarSize: 100,
-                                messageDuration: const Duration(seconds: 5),
-                              ),
-                            ),
 
                             const SizedBox(height: 32),
 

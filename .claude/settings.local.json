@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(echo:*)",
+      "Bash(assetsavatareyes.gitkeep)",
+      "Bash(assetsavatarmouth.gitkeep)",
+      "Bash(assetsavatarhands.gitkeep)",
+      "Bash(assetsavataraccessories.gitkeep)",
+      "Bash(flutter pub get:*)",
+      "Bash(flutter run:*)",
+      "Bash(flutter clean:*)",
+      "Bash(git rm:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nImplementar plataforma educativa APRENDE_KIDS con Flutter Web\n\n- Sistema de autenticación con Firebase\n- Personalización de avatares con sistema de compra\n- Minijuegos educativos por categorías (Matemáticas, Lenguaje, Ciencia)\n- Sistema de puntuación y monedas virtuales\n- Diseño responsive para móvil, tablet y desktop\n- Optimización de UI para dispositivos móviles\n- Integración con Firestore para persistencia de datos\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git remote remove:*)",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)",
+      "Bash(flutter build:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nAgregar build web para deployment y actualizar .gitignore\n\n- Actualizar .gitignore para incluir build/web/ en el repositorio\n- Generar build de producción para Flutter Web\n- Necesario para desplegar en GitHub Pages, Firebase Hosting, etc.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git commit -m \"$(cat <<''EOF''\nImplementar sistema de avatar con mensajes motivacionales\n\n- Crear enum AvatarMood con 7 estados emocionales del avatar\n- Implementar banco de mensajes con 50+ frases motivacionales\n- Crear widget AvatarMessageBubble con animaciones y diseño cómic\n- Desarrollar AvatarWithMessage que combina avatar + mensaje contextual\n- Integrar bienvenida personalizada en HomeScreen\n- Agregar feedback emocional en GameResultsScreen según desempeño\n- Mensajes adaptativos: victoria, celebración, ánimo, pensando\n- Colores y resplandor del avatar según estado emocional\n- Sistema aleatorio para evitar repetición de mensajes\n- Documentación completa del sistema en README\n\nMejora la experiencia de usuario infantil con feedback positivo constante\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git commit:*)",
+      "Bash(timeout:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
