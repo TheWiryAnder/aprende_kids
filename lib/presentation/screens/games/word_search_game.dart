@@ -266,6 +266,7 @@ class _WordSearchGameState extends State<WordSearchGame> {
 
     setState(() {
       _selectedCells.clear();
+      _selectedCellIndices.clear(); // Limpiar celdas temporales (azul desaparece)
     });
   }
 
@@ -831,15 +832,39 @@ class _WordSearchGameState extends State<WordSearchGame> {
               ),
             ],
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: List.generate(
-              gridSize,
-              (row) => Row(
-                mainAxisSize: MainAxisSize.min,
-                children: List.generate(
-                  gridSize,
-                  (col) => _buildCell(row, col, cellSize),
+          child: GestureDetector(
+            // Capturar eventos de arrastre continuo
+            onPanStart: (details) {
+              final localPos = details.localPosition;
+              final row = (localPos.dy / (cellSize + 4)).floor(); // +4 por margin
+              final col = (localPos.dx / (cellSize + 4)).floor();
+
+              if (row >= 0 && row < gridSize && col >= 0 && col < gridSize) {
+                _onCellTapDown(row, col);
+              }
+            },
+            onPanUpdate: (details) {
+              final localPos = details.localPosition;
+              final row = (localPos.dy / (cellSize + 4)).floor();
+              final col = (localPos.dx / (cellSize + 4)).floor();
+
+              if (row >= 0 && row < gridSize && col >= 0 && col < gridSize) {
+                _onCellDragUpdate(row, col);
+              }
+            },
+            onPanEnd: (_) {
+              _onCellTapUp();
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(
+                gridSize,
+                (row) => Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(
+                    gridSize,
+                    (col) => _buildCell(row, col, cellSize),
+                  ),
                 ),
               ),
             ),
@@ -886,42 +911,29 @@ class _WordSearchGameState extends State<WordSearchGame> {
       backgroundColor = Colors.white;
     }
 
-    return MouseRegion(
-      onEnter: (_) {
-        if (_isSelecting && mounted) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted && _isSelecting) {
-              _onCellDragUpdate(row, col);
-            }
-          });
-        }
-      },
-      child: GestureDetector(
-        onTapDown: (_) => _onCellTapDown(row, col),
-        onTapUp: (_) => _onCellTapUp(),
-        child: Container(
-          width: size,
-          height: size,
-          margin: const EdgeInsets.all(2),
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: isSelected
-                  ? Colors.blue.shade400
+    return Container(
+      width: size,
+      height: size,
+      margin: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isSelected
+              ? Colors.blue.shade400
+              : isFound
+                  ? (foundWordColor ?? Colors.green.shade400)
                   : Colors.grey.shade300,
-              width: isSelected ? 2 : 1,
-            ),
-          ),
-          child: Center(
-            child: Text(
-              _wordSearch.grid[row][col],
-              style: GoogleFonts.fredoka(
-                fontSize: size * 0.4,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
+          width: isSelected ? 2 : (isFound ? 2 : 1),
+        ),
+      ),
+      child: Center(
+        child: Text(
+          _wordSearch.grid[row][col],
+          style: GoogleFonts.fredoka(
+            fontSize: size * 0.4,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
           ),
         ),
       ),
