@@ -30,6 +30,10 @@ class _EmojiSortingGameState extends State<EmojiSortingGame> with SingleTickerPr
   Timer? _gameTimer;
   bool _gameEnded = false;
 
+  // Sistema de estados del personaje para feedback visual
+  GameVideoType _characterMood = GameVideoType.pensando;
+  Timer? _moodTimer;
+
   @override
   void initState() {
     super.initState();
@@ -73,8 +77,28 @@ class _EmojiSortingGameState extends State<EmojiSortingGame> with SingleTickerPr
   @override
   void dispose() {
     _gameTimer?.cancel();
+    _moodTimer?.cancel();
     _celebrationController.dispose();
     super.dispose();
+  }
+
+  /// Cambia el estado del personaje temporalmente y luego vuelve a "pensando"
+  void _changeCharacterMood(GameVideoType mood, {int durationSeconds = 2}) {
+    // Cancelar timer anterior si existe
+    _moodTimer?.cancel();
+
+    setState(() {
+      _characterMood = mood;
+    });
+
+    // Volver al estado "pensando" después del tiempo especificado
+    _moodTimer = Timer(Duration(seconds: durationSeconds), () {
+      if (mounted) {
+        setState(() {
+          _characterMood = GameVideoType.pensando;
+        });
+      }
+    });
   }
 
   void _generateNewGame() {
@@ -125,23 +149,13 @@ class _EmojiSortingGameState extends State<EmojiSortingGame> with SingleTickerPr
 
   void _showCorrectFeedback() {
     _celebrationController.forward(from: 0);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('¡Correcto! ✨', style: TextStyle(fontSize: 18)),
-        backgroundColor: Colors.green,
-        duration: Duration(seconds: 1),
-      ),
-    );
+    // Cambiar GIF a "excelente" por 2 segundos
+    _changeCharacterMood(GameVideoType.excelente, durationSeconds: 2);
   }
 
   void _showIncorrectFeedback() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Intenta de nuevo 🤔', style: TextStyle(fontSize: 18)),
-        backgroundColor: Colors.orange,
-        duration: Duration(seconds: 1),
-      ),
-    );
+    // Cambiar GIF a "inténtalo" por 2 segundos
+    _changeCharacterMood(GameVideoType.intentalo, durationSeconds: 2);
   }
 
   void _showVictoryDialog() {
@@ -408,6 +422,8 @@ class _EmojiSortingGameState extends State<EmojiSortingGame> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 800;
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -421,42 +437,108 @@ class _EmojiSortingGameState extends State<EmojiSortingGame> with SingleTickerPr
           ),
         ),
         child: SafeArea(
-          child: Stack(
+          child: Column(
             children: [
-              Column(
-                children: [
-                  _buildHeader(),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        children: [
-                          // Columnas de categorías
-                          _buildCategoryColumns(),
-                          const SizedBox(height: 32),
-                          // Banco de emojis
-                          _buildEmojiBank(),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+              _buildHeader(),
+              Expanded(
+                child: isMobile ? _buildMobileLayout() : _buildDesktopLayout(),
               ),
-              // GIF de pensando - lado izquierdo, grande y visible (solo si el juego está activo)
-              if (!_gameEnded)
-                Positioned(
-                  bottom: 24,
-                  left: 24,
-                  child: const GameVideoWidget(
-                    videoType: GameVideoType.pensando,
-                    width: 200,
-                    height: 200,
-                  ),
-                ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  // Layout para móvil (vertical)
+  Widget _buildMobileLayout() {
+    return Stack(
+      children: [
+        SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              children: [
+                const SizedBox(height: 16),
+                // Cajas de categorías
+                _buildCategoryColumns(),
+                const SizedBox(height: 24),
+                // Banco de emojis
+                _buildEmojiBank(),
+                const SizedBox(height: 240), // Espacio para el personaje
+              ],
+            ),
+          ),
+        ),
+        // Personaje en la esquina inferior izquierda
+        if (!_gameEnded)
+          Positioned(
+            bottom: 24,
+            left: 24,
+            child: GameVideoWidget(
+              videoType: _characterMood,
+              width: 180,
+              height: 180,
+            ),
+          ),
+      ],
+    );
+  }
+
+  // Layout para desktop (horizontal: 3 columnas)
+  Widget _buildDesktopLayout() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Columna Izquierda (30%): Personaje - SOLO GIF
+        Expanded(
+          flex: 3,
+          child: !_gameEnded
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        // GIF grande: 90% del ancho disponible
+                        final gifSize = constraints.maxWidth * 0.90;
+                        return GameVideoWidget(
+                          videoType: _characterMood,
+                          width: gifSize,
+                          height: gifSize,
+                        );
+                      },
+                    ),
+                  ),
+                )
+              : const SizedBox(),
+        ),
+
+        // Columna Centro (50%): Cajas de Categorías
+        Expanded(
+          flex: 5,
+          child: Center(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+                child: _buildCategoryColumns(),
+              ),
+            ),
+          ),
+        ),
+
+        // Columna Derecha (20%): Banco de Emojis
+        Expanded(
+          flex: 2,
+          child: Center(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: _buildEmojiBank(),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -564,36 +646,34 @@ class _EmojiSortingGameState extends State<EmojiSortingGame> with SingleTickerPr
   }
 
   Widget _buildCategoryColumns() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isWide = constraints.maxWidth > 600;
+    // En desktop: Grilla 2x2 para las 4 categorías
+    // En móvil: Columna vertical
+    final isMobile = MediaQuery.of(context).size.width < 800;
 
-        if (isWide) {
-          // Desktop: fila de columnas
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: _categories.asMap().entries.map((entry) {
-              return Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: _buildCategoryColumn(entry.key, entry.value),
-                ),
-              );
-            }).toList(),
+    if (isMobile) {
+      // Móvil: columnas apiladas verticalmente
+      return Column(
+        children: _categories.asMap().entries.map((entry) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: _buildCategoryColumn(entry.key, entry.value),
           );
-        } else {
-          // Móvil: columnas apiladas
-          return Column(
-            children: _categories.asMap().entries.map((entry) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: _buildCategoryColumn(entry.key, entry.value),
-              );
-            }).toList(),
+        }).toList(),
+      );
+    } else {
+      // Desktop: Grilla 2x2
+      return Wrap(
+        spacing: 16,
+        runSpacing: 16,
+        alignment: WrapAlignment.center,
+        children: _categories.asMap().entries.map((entry) {
+          return SizedBox(
+            width: 220, // Ancho fijo para cajas en desktop
+            child: _buildCategoryColumn(entry.key, entry.value),
           );
-        }
-      },
-    );
+        }).toList(),
+      );
+    }
   }
 
   Widget _buildCategoryColumn(int index, EmojiCategory category) {
@@ -724,11 +804,13 @@ class _EmojiSortingGameState extends State<EmojiSortingGame> with SingleTickerPr
   }
 
   Widget _buildEmojiBank() {
+    final isMobile = MediaQuery.of(context).size.width < 800;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -739,35 +821,39 @@ class _EmojiSortingGameState extends State<EmojiSortingGame> with SingleTickerPr
         ],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.touch_app, color: Colors.teal, size: 28),
+              const Icon(Icons.touch_app, color: Colors.teal, size: 24),
               const SizedBox(width: 8),
-              Text(
-                'Emojis para Clasificar',
-                style: GoogleFonts.fredoka(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.teal.shade700,
+              Flexible(
+                child: Text(
+                  isMobile ? 'Emojis para Clasificar' : 'Arrastra',
+                  style: GoogleFonts.fredoka(
+                    fontSize: isMobile ? 22 : 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.teal.shade700,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
 
           if (_availableEmojis.isEmpty)
             Padding(
-              padding: const EdgeInsets.all(32),
+              padding: const EdgeInsets.all(24),
               child: Column(
                 children: [
-                  const Text('🎉', style: TextStyle(fontSize: 64)),
-                  const SizedBox(height: 16),
+                  const Text('🎉', style: TextStyle(fontSize: 48)),
+                  const SizedBox(height: 8),
                   Text(
-                    '¡Todos los emojis clasificados!',
+                    '¡Completo!',
                     style: GoogleFonts.fredoka(
-                      fontSize: 20,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.teal.shade700,
                     ),
@@ -777,8 +863,8 @@ class _EmojiSortingGameState extends State<EmojiSortingGame> with SingleTickerPr
             )
           else
             Wrap(
-              spacing: 12,
-              runSpacing: 12,
+              spacing: isMobile ? 12 : 8,
+              runSpacing: isMobile ? 12 : 8,
               alignment: WrapAlignment.center,
               children: _availableEmojis.map((emoji) {
                 return Draggable<String>(
