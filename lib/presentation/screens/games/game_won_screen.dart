@@ -109,68 +109,59 @@ class GameWonScreen extends StatelessWidget {
   }
 
   /// Layout desktop: Horizontal (GIF izquierda 40%, Card derecha 60%)
-  /// Todo el contenido centrado y escalado automáticamente sin scroll
+  /// Patrón "Contenedor de Referencia": Diseño fijo que escala proporcionalmente
   Widget _buildDesktopLayout(int accuracy) {
     return Builder(
       builder: (context) {
-        final screenHeight = MediaQuery.of(context).size.height;
-        final screenWidth = MediaQuery.of(context).size.width;
+        return Container(
+          width: double.infinity,
+          height: double.infinity,
+          alignment: Alignment.center, // Centrado crítico
+          child: FittedBox(
+            fit: BoxFit.scaleDown, // Solo reduce si no cabe, no estira
+            child: SizedBox(
+              width: 1200, // Tamaño de referencia fijo (diseño ideal)
+              height: 700,  // Altura de referencia fija
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // COLUMNA IZQUIERDA (40%): Avatar de Celebración
+                  Expanded(
+                    flex: 4,
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: GameVideoWidget(
+                          videoType: GameVideoType.excelente,
+                          width: 400,
+                          height: 400,
+                        ),
+                      ),
+                    ),
+                  ),
 
-        return SizedBox(
-          height: screenHeight,
-          width: screenWidth,
-          child: Center(
-            child: FittedBox(
-              fit: BoxFit.contain,
-              child: SizedBox(
-                width: screenWidth * 0.9, // 90% del ancho para margen
-                height: screenHeight * 0.85, // 85% del alto para margen
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // COLUMNA IZQUIERDA (40%): Avatar de Celebración MÁS ANCHO
-                    Expanded(
-                      flex: 4,
-                      child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: GameVideoWidget(
-                            videoType: GameVideoType.excelente,
-                            width: double.infinity,
-                            height: double.infinity,
+                  // COLUMNA DERECHA (60%): Tarjeta de Resultados
+                  Expanded(
+                    flex: 6,
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                        child: SingleChildScrollView(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _buildResultsCard(accuracy),
+                              const SizedBox(height: 24),
+                              _buildActionButtons(context),
+                            ],
                           ),
                         ),
                       ),
                     ),
-
-                    // COLUMNA DERECHA (60%): Tarjeta de Resultados
-                    Expanded(
-                      flex: 6,
-                      child: SingleChildScrollView(
-                        child: Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: ConstrainedBox(
-                                constraints: const BoxConstraints(maxWidth: 600),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    _buildResultsCard(accuracy),
-                                    const SizedBox(height: 24),
-                                    _buildActionButtons(context),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
