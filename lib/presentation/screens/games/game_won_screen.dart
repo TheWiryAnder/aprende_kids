@@ -146,19 +146,24 @@ class GameWonScreen extends StatelessWidget {
                     // COLUMNA DERECHA (60%): Tarjeta de Resultados
                     Expanded(
                       flex: 6,
-                      child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 600),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                _buildResultsCard(accuracy),
-                                const SizedBox(height: 24),
-                                _buildActionButtons(context),
-                              ],
+                      child: SingleChildScrollView(
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(maxWidth: 600),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    _buildResultsCard(accuracy),
+                                    const SizedBox(height: 24),
+                                    _buildActionButtons(context),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
                         ),
