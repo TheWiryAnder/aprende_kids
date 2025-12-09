@@ -108,54 +108,69 @@ class GameWonScreen extends StatelessWidget {
     );
   }
 
-  /// Layout desktop: Horizontal (GIF izquierda 35%, Card derecha 65%)
+  /// Layout desktop: Horizontal (GIF izquierda 40%, Card derecha 60%)
+  /// Todo el contenido centrado y escalado automáticamente sin scroll
   Widget _buildDesktopLayout(int accuracy) {
     return Builder(
-      builder: (context) => Row(
-        children: [
-          // COLUMNA IZQUIERDA (35%): Avatar de Celebración
-          Expanded(
-            flex: 35,
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    // GIF grande y festivo, sin tarjeta
-                    final gifSize = constraints.maxWidth * 0.8;
-                    return GameVideoWidget(
-                      videoType: GameVideoType.excelente,
-                      width: gifSize.clamp(200, 400),
-                      height: gifSize.clamp(200, 400),
-                    );
-                  },
-                ),
-              ),
-            ),
-          ),
+      builder: (context) {
+        final screenHeight = MediaQuery.of(context).size.height;
+        final screenWidth = MediaQuery.of(context).size.width;
 
-          // COLUMNA DERECHA (65%): Tarjeta de Resultados
-          Expanded(
-            flex: 65,
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 600),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildResultsCard(accuracy),
-                      const SizedBox(height: 32),
-                      _buildActionButtons(context),
-                    ],
-                  ),
+        return SizedBox(
+          height: screenHeight,
+          width: screenWidth,
+          child: Center(
+            child: FittedBox(
+              fit: BoxFit.contain,
+              child: SizedBox(
+                width: screenWidth * 0.9, // 90% del ancho para margen
+                height: screenHeight * 0.85, // 85% del alto para margen
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // COLUMNA IZQUIERDA (40%): Avatar de Celebración MÁS ANCHO
+                    Expanded(
+                      flex: 4,
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: GameVideoWidget(
+                            videoType: GameVideoType.excelente,
+                            width: double.infinity,
+                            height: double.infinity,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // COLUMNA DERECHA (60%): Tarjeta de Resultados
+                    Expanded(
+                      flex: 6,
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 600),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _buildResultsCard(accuracy),
+                                const SizedBox(height: 24),
+                                _buildActionButtons(context),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
