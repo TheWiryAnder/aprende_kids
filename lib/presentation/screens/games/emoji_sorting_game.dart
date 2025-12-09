@@ -381,59 +381,75 @@ class _EmojiSortingGameState extends State<EmojiSortingGame> with SingleTickerPr
   }
 
   // Layout para desktop (horizontal: 3 columnas)
+  // Patrón "Scale to Fit": Se adapta a cualquier resolución sin scroll
   Widget _buildDesktopLayout() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Columna Izquierda (30%): Personaje - SOLO GIF
-        Expanded(
-          flex: 3,
-          child: !_gameEnded
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        // GIF grande: 90% del ancho disponible
-                        final gifSize = constraints.maxWidth * 0.90;
-                        return GameVideoWidget(
-                          videoType: _characterMood,
-                          width: gifSize,
-                          height: gifSize,
-                        );
-                      },
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Center(
+          child: FittedBox(
+            fit: BoxFit.contain,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 1400,
+                maxHeight: 900,
+              ),
+              child: SizedBox(
+                width: constraints.maxWidth,
+                height: constraints.maxHeight,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Columna Izquierda (30%): Personaje - SOLO GIF
+                    Expanded(
+                      flex: 3,
+                      child: !_gameEnded
+                          ? Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    // GIF grande: 90% del ancho disponible
+                                    final gifSize = constraints.maxWidth * 0.90;
+                                    return GameVideoWidget(
+                                      videoType: _characterMood,
+                                      width: gifSize,
+                                      height: gifSize,
+                                    );
+                                  },
+                                ),
+                              ),
+                            )
+                          : const SizedBox(),
                     ),
-                  ),
-                )
-              : const SizedBox(),
-        ),
 
-        // Columna Centro (50%): Cajas de Categorías
-        Expanded(
-          flex: 5,
-          child: Center(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-                child: _buildCategoryColumns(),
+                    // Columna Centro (50%): Cajas de Categorías
+                    Expanded(
+                      flex: 5,
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+                          child: _buildCategoryColumns(),
+                        ),
+                      ),
+                    ),
+
+                    // Columna Derecha (20%): Banco de Emojis
+                    Expanded(
+                      flex: 2,
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: _buildEmojiBank(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-
-        // Columna Derecha (20%): Banco de Emojis
-        Expanded(
-          flex: 2,
-          child: Center(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: _buildEmojiBank(),
-              ),
-            ),
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 

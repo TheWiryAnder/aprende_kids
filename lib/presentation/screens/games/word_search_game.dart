@@ -559,60 +559,76 @@ class _WordSearchGameState extends State<WordSearchGame> {
   }
 
   // Layout para desktop (horizontal: 3 columnas - 30% / 50% / 20%)
+  // Patrón "Scale to Fit": Se adapta a cualquier resolución sin scroll
   Widget _buildDesktopLayout() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Columna Izquierda (30%): Personaje - SOLO GIF, SIN TEXTO, SIN FONDO
-        // El GIF cambia según el estado: pensando (neutro), excelente (éxito), intentalo (error)
-        Expanded(
-          flex: 3,
-          child: !_gameEnded
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        // GIF grande: 90% del ancho disponible de la columna
-                        final gifSize = constraints.maxWidth * 0.90;
-                        return GameVideoWidget(
-                          videoType: _characterMood, // ← Usa el estado del personaje
-                          width: gifSize,
-                          height: gifSize,
-                        );
-                      },
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Center(
+          child: FittedBox(
+            fit: BoxFit.contain,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 1400,
+                maxHeight: 900,
+              ),
+              child: SizedBox(
+                width: constraints.maxWidth,
+                height: constraints.maxHeight,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Columna Izquierda (30%): Personaje - SOLO GIF, SIN TEXTO, SIN FONDO
+                    // El GIF cambia según el estado: pensando (neutro), excelente (éxito), intentalo (error)
+                    Expanded(
+                      flex: 3,
+                      child: !_gameEnded
+                          ? Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    // GIF grande: 90% del ancho disponible de la columna
+                                    final gifSize = constraints.maxWidth * 0.90;
+                                    return GameVideoWidget(
+                                      videoType: _characterMood, // ← Usa el estado del personaje
+                                      width: gifSize,
+                                      height: gifSize,
+                                    );
+                                  },
+                                ),
+                              ),
+                            )
+                          : const SizedBox(),
                     ),
-                  ),
-                )
-              : const SizedBox(),
-        ),
 
-        // Columna Centro (50%): Cuadrícula de la Sopa de Letras
-        Expanded(
-          flex: 5,
-          child: Center(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-                child: _buildGrid(),
+                    // Columna Centro (50%): Cuadrícula de la Sopa de Letras
+                    Expanded(
+                      flex: 5,
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+                          child: _buildGrid(),
+                        ),
+                      ),
+                    ),
+
+                    // Columna Derecha (20%): Lista de Palabras a encontrar
+                    Expanded(
+                      flex: 2,
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: _buildWordList(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-
-        // Columna Derecha (20%): Lista de Palabras a encontrar
-        Expanded(
-          flex: 2,
-          child: Center(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: _buildWordList(),
-              ),
-            ),
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 
