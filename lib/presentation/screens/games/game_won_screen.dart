@@ -120,42 +120,45 @@ class GameWonScreen extends StatelessWidget {
           child: FittedBox(
             fit: BoxFit.scaleDown, // Solo reduce si no cabe, no estira
             child: SizedBox(
-              width: 1200, // Tamaño de referencia fijo (diseño ideal)
-              height: 700,  // Altura de referencia fija
+              width: 1100, // Reducido de 1200 para mejor ajuste
+              height: 650,  // Reducido de 700 para mejor proporción
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // COLUMNA IZQUIERDA (40%): Avatar de Celebración
-                  Expanded(
-                    flex: 4,
+                  // COLUMNA IZQUIERDA (35%): Avatar de Celebración
+                  const Expanded(
+                    flex: 35,
                     child: Center(
                       child: Padding(
-                        padding: const EdgeInsets.all(24),
+                        padding: EdgeInsets.all(16),
                         child: GameVideoWidget(
                           videoType: GameVideoType.excelente,
-                          width: 400,
-                          height: 400,
+                          width: 320,
+                          height: 320,
                         ),
                       ),
                     ),
                   ),
 
-                  // COLUMNA DERECHA (60%): Tarjeta de Resultados
+                  // COLUMNA DERECHA (65%): Tarjeta de Resultados
                   Expanded(
-                    flex: 6,
+                    flex: 65,
                     child: Center(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-                        child: SingleChildScrollView(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              _buildResultsCard(accuracy),
-                              const SizedBox(height: 24),
-                              _buildActionButtons(context),
-                            ],
+                        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 550),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _buildResultsCard(accuracy),
+                                const SizedBox(height: 20),
+                                _buildActionButtons(context),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -173,15 +176,15 @@ class GameWonScreen extends StatelessWidget {
   /// Tarjeta blanca con todos los resultados
   Widget _buildResultsCard(int accuracy) {
     return Container(
-      padding: const EdgeInsets.all(32),
+      padding: const EdgeInsets.all(24), // Reducido de 32
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20), // Reducido de 24
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -191,46 +194,46 @@ class GameWonScreen extends StatelessWidget {
           Text(
             '¡Juego Completado!',
             style: GoogleFonts.fredoka(
-              fontSize: 32,
+              fontSize: 26, // Reducido de 32
               fontWeight: FontWeight.bold,
               color: primaryColor,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
 
           // Subtítulo (nombre del juego)
           Text(
             gameTitle,
             style: GoogleFonts.fredoka(
-              fontSize: 20,
+              fontSize: 16, // Reducido de 20
               color: Colors.grey.shade700,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16), // Reducido de 24
 
           // Mensaje motivacional
           Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: 24,
-              vertical: 12,
+              horizontal: 20, // Reducido de 24
+              vertical: 10,   // Reducido de 12
             ),
             decoration: BoxDecoration(
               color: Colors.amber.shade50,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(12), // Reducido de 16
             ),
             child: Text(
               motivationalMessage,
               style: GoogleFonts.fredoka(
-                fontSize: 20,
+                fontSize: 16, // Reducido de 20
                 fontWeight: FontWeight.bold,
                 color: Colors.amber.shade900,
               ),
               textAlign: TextAlign.center,
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16), // Reducido de 24
 
           // Estrellas
           Row(
@@ -238,10 +241,10 @@ class GameWonScreen extends StatelessWidget {
             children: List.generate(
               3,
               (index) => Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 6), // Reducido de 8
                 child: Icon(
                   index < stars ? Icons.star : Icons.star_border,
-                  size: 64,
+                  size: 48, // Reducido de 64
                   color: index < stars
                       ? Colors.amber.shade600
                       : Colors.grey.shade300,
@@ -249,7 +252,7 @@ class GameWonScreen extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 20), // Reducido de 32
 
           // Puntuación grande
           Column(
@@ -257,15 +260,15 @@ class GameWonScreen extends StatelessWidget {
               Text(
                 'Puntuación',
                 style: GoogleFonts.fredoka(
-                  fontSize: 18,
+                  fontSize: 14, // Reducido de 18
                   color: Colors.grey.shade600,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               Text(
                 score.toString(),
                 style: GoogleFonts.fredoka(
-                  fontSize: 64,
+                  fontSize: 48, // Reducido de 64
                   fontWeight: FontWeight.bold,
                   color: primaryColor,
                   height: 1.0,
@@ -273,14 +276,14 @@ class GameWonScreen extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16), // Reducido de 24
 
           // Monedas ganadas (Botón amarillo)
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(14), // Reducido de 20
             decoration: BoxDecoration(
               color: Colors.amber.shade100,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(12), // Reducido de 16
               border: Border.all(
                 color: Colors.amber.shade400,
                 width: 2,
@@ -289,15 +292,15 @@ class GameWonScreen extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('💰', style: TextStyle(fontSize: 36)),
-                const SizedBox(width: 12),
+                const Text('💰', style: TextStyle(fontSize: 28)), // Reducido de 36
+                const SizedBox(width: 10), // Reducido de 12
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       '+$coins monedas',
                       style: GoogleFonts.fredoka(
-                        fontSize: 26,
+                        fontSize: 20, // Reducido de 26
                         fontWeight: FontWeight.bold,
                         color: Colors.amber.shade900,
                       ),
@@ -305,7 +308,7 @@ class GameWonScreen extends StatelessWidget {
                     Text(
                       'Tiempo: ${_formatTime(timeRemaining)}',
                       style: GoogleFonts.fredoka(
-                        fontSize: 14,
+                        fontSize: 12, // Reducido de 14
                         color: Colors.grey.shade700,
                       ),
                     ),
@@ -314,7 +317,7 @@ class GameWonScreen extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 20), // Reducido de 32
 
           // Estadísticas (Preguntas/Aciertos/Precisión)
           Row(
@@ -342,20 +345,20 @@ class GameWonScreen extends StatelessWidget {
           ),
 
           // Mensaje de guardado
-          const SizedBox(height: 24),
+          const SizedBox(height: 16), // Reducido de 24
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 Icons.check_circle,
                 color: Colors.green.shade600,
-                size: 20,
+                size: 16, // Reducido de 20
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               Text(
                 '¡Puntuación guardada!',
                 style: GoogleFonts.fredoka(
-                  fontSize: 16,
+                  fontSize: 13, // Reducido de 16
                   fontWeight: FontWeight.w600,
                   color: Colors.green.shade700,
                 ),
@@ -484,21 +487,21 @@ class GameWonScreen extends StatelessWidget {
   }) {
     return Column(
       children: [
-        Icon(icon, color: color, size: 32),
-        const SizedBox(height: 8),
+        Icon(icon, color: color, size: 24), // Reducido de 32
+        const SizedBox(height: 6), // Reducido de 8
         Text(
           value,
           style: GoogleFonts.fredoka(
-            fontSize: 24,
+            fontSize: 18, // Reducido de 24
             fontWeight: FontWeight.bold,
             color: Colors.black87,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 2),
         Text(
           label,
           style: GoogleFonts.fredoka(
-            fontSize: 14,
+            fontSize: 11, // Reducido de 14
             color: Colors.grey.shade600,
           ),
         ),
