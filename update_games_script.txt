@@ -1,0 +1,33 @@
+LISTA DE JUEGOS PENDIENTES DE ACTUALIZACIÓN COMPLETA:
+
+LENGUAJE (6 juegos - falta agregar método y layout):
+1. detectives_ortografia_game.dart (import ✓)
+2. rima_magica_game.dart (import ✓)
+3. sinonimos_antonimos_game.dart (import ✓)
+4. aventura_comprension_game.dart (import ✓)
+5. historias_locas_game.dart (import ✓)
+6. inventor_palabras_game.dart (import ✓)
+
+CIENCIAS (6 juegos - necesitan import, método y layout):
+7. exploradores_cuerpo_game.dart
+8. sistema_solar_game.dart
+9. cadena_alimenticia_game.dart
+10. estados_materia_game.dart
+11. planeta_tierra_game.dart
+12. ecosistemas_mundo_game.dart
+
+CREATIVIDAD (4 juegos - necesitan import, método y layout):
+13. disenador_monstruos_game.dart
+14. mezcla_colores_game.dart
+15. artista_emojis_game.dart
+16. asociacion_creativa_game.dart
+
+MATEMÁTICAS (6 juegos - COMPLETADOS ✓):
+- resta_magica_game.dart ✓
+- multiplicacion_espacial_game.dart ✓
+- division_detective_game.dart ✓
+- geometria_constructora_game.dart ✓
+- numeros_perdidos_game.dart ✓
+- completa_patron_game.dart ✓
+
+Total pendientes: 16 juegos

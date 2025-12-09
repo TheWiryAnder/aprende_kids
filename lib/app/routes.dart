@@ -45,6 +45,8 @@ import '../presentation/screens/profile/profile_screen.dart';
 import '../presentation/screens/shop/avatar_shop_screen.dart';
 import '../presentation/screens/rewards/rewards_screen.dart';
 import '../presentation/screens/parental/parental_dashboard.dart';
+import '../presentation/screens/games/word_search_level_selector.dart';
+import '../presentation/screens/games/emoji_sorting_level_selector.dart';
 
 class AppRoutes {
   static final GoRouter router = GoRouter(
@@ -200,6 +202,18 @@ class AppRoutes {
         path: '/parental',
         name: 'parental',
         builder: (context, state) => const ParentalDashboard(),
+      ),
+
+      // Fun Games (Juegos de distracción)
+      GoRoute(
+        path: '/word-search',
+        name: 'word-search',
+        builder: (context, state) => const WordSearchLevelSelector(),
+      ),
+      GoRoute(
+        path: '/emoji-sorting',
+        name: 'emoji-sorting',
+        builder: (context, state) => const EmojiSortingLevelSelector(),
       ),
     ],
 

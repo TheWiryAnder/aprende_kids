@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../app/theme/colors.dart';
+import '../../widgets/game_video_widget.dart';
 
 class GeometriaConstructoraGame extends StatefulWidget {
   const GeometriaConstructoraGame({super.key});
@@ -225,6 +226,13 @@ class _GeometriaConstructoraGameState extends State<GeometriaConstructoraGame> {
     });
   }
 
+  GameVideoType _getCurrentVideoType() {
+    if (_showFeedback) {
+      return _isCorrect ? GameVideoType.excelente : GameVideoType.intentalo;
+    }
+    return GameVideoType.pensando;
+  }
+
   Color _getOptionColor(int option) {
     if (!_showFeedback) return Colors.white;
     if (option == _selectedAnswer) {
@@ -249,6 +257,9 @@ class _GeometriaConstructoraGameState extends State<GeometriaConstructoraGame> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final showVideo = screenWidth > 600; // Mostrar en tablet y desktop
+
     final shapeData = _shapes[_currentShape]!;
     final shapeColor = shapeData['color'] as Color;
 
@@ -269,34 +280,63 @@ class _GeometriaConstructoraGameState extends State<GeometriaConstructoraGame> {
             children: [
               _buildHeader(),
               Expanded(
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 800),
-                    child: Container(
-                      margin: const EdgeInsets.all(16),
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.2),
-                            blurRadius: 15,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Video en la izquierda (tablet y desktop)
+                    if (showVideo)
+                      Container(
+                        width: 450,
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: LayoutBuilder(
+                                builder: (context, constraints) {
+                                  return GameVideoWidget(
+                                    videoType: _getCurrentVideoType(),
+                                    width: 400,
+                                    height: constraints.maxHeight,
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          _buildCharacter(),
-                          _buildProblem(shapeData, shapeColor),
-                          _buildOptions(),
-                          if (_showFeedback) _buildFeedback(),
-                        ],
+                    // Contenido del juego
+                    Expanded(
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 800),
+                          child: Container(
+                            margin: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.2),
+                                  blurRadius: 15,
+                                  offset: const Offset(0, 5),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _buildCharacter(),
+                                _buildProblem(shapeData, shapeColor),
+                                _buildOptions(),
+                                if (_showFeedback) _buildFeedback(),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ],

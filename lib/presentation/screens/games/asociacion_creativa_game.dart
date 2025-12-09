@@ -13,6 +13,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../widgets/game_video_widget.dart';
 
 class AsociacionCreativaGame extends StatefulWidget {
   const AsociacionCreativaGame({super.key});
@@ -230,6 +231,13 @@ class _AsociacionCreativaGameState extends State<AsociacionCreativaGame> {
     });
   }
 
+  GameVideoType _getCurrentVideoType() {
+    if (_showFeedback) {
+      return _isCorrect ? GameVideoType.excelente : GameVideoType.intentalo;
+    }
+    return GameVideoType.pensando;
+  }
+
   void _endGame() {
     _gameTimer?.cancel();
 
@@ -249,6 +257,9 @@ class _AsociacionCreativaGameState extends State<AsociacionCreativaGame> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final showVideo = screenWidth > 600;
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -266,41 +277,68 @@ class _AsociacionCreativaGameState extends State<AsociacionCreativaGame> {
             children: [
               _buildHeader(),
               Expanded(
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 800),
-                    child: Container(
-                      margin: const EdgeInsets.all(16),
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.2),
-                            blurRadius: 20,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: SingleChildScrollView(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (showVideo)
+                      Container(
+                        width: 450,
+                        padding: const EdgeInsets.all(20),
                         child: Column(
-                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            const SizedBox(height: 16),
-                            _buildCharacter(),
-                            const SizedBox(height: 20),
-                            _buildProblem(),
-                            const SizedBox(height: 20),
-                            _buildOptions(),
-                            const SizedBox(height: 16),
-                            if (_showFeedback) _buildFeedback(),
-                            const SizedBox(height: 16),
+                            Expanded(
+                              child: LayoutBuilder(
+                                builder: (context, constraints) {
+                                  return GameVideoWidget(
+                                    videoType: _getCurrentVideoType(),
+                                    width: 400,
+                                    height: constraints.maxHeight,
+                                  );
+                                },
+                              ),
+                            ),
                           ],
                         ),
                       ),
+                    Expanded(
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 800),
+                          child: Container(
+                            margin: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.2),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 5),
+                                ),
+                              ],
+                            ),
+                            child: SingleChildScrollView(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const SizedBox(height: 16),
+                                  _buildCharacter(),
+                                  const SizedBox(height: 20),
+                                  _buildProblem(),
+                                  const SizedBox(height: 20),
+                                  _buildOptions(),
+                                  const SizedBox(height: 16),
+                                  if (_showFeedback) _buildFeedback(),
+                                  const SizedBox(height: 16),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ],

@@ -20,8 +20,7 @@ import '../../../app/theme/colors.dart';
 import '../../../domain/services/avatar_service.dart';
 import '../../widgets/avatar_widget.dart';
 import '../../../app/utils/responsive_utils.dart';
-import '../../widgets/avatar_message_overlay.dart';
-import '../../../app/constants/avatar_mood.dart';
+import '../../widgets/welcome_video_overlay.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -49,16 +48,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
         final user = state.user;
 
-        // Mostrar overlay de bienvenida solo la primera vez
+        // Mostrar video de bienvenida solo la primera vez
         if (!_hasShownWelcome) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             setState(() => _hasShownWelcome = true);
-            AvatarMessageOverlay.show(
-              context,
-              mood: AvatarMood.greeting,
-              userName: user.displayName,
-              duration: const Duration(seconds: 2),
-            );
+            WelcomeVideoOverlay.show(context);
           });
         }
 
@@ -115,6 +109,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
                             // Categorías en fila horizontal
                             _buildCategoriesRow(context),
+
+                            const SizedBox(height: 48),
+
+                            // Nueva sección: Zona de Juegos
+                            _buildGamesZoneSection(context),
                           ],
                         ),
                       ),
@@ -126,6 +125,166 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildGamesZoneSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Título de la sección
+        Text(
+          '¿Listo para un descanso?',
+          style: GoogleFonts.fredoka(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Zona de Juegos - Diviértete sin presión',
+          style: GoogleFonts.fredoka(
+            fontSize: 16,
+            color: Colors.grey.shade600,
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        // Juegos de distracción
+        _buildFunGamesRow(context),
+      ],
+    );
+  }
+
+  Widget _buildFunGamesRow(BuildContext context) {
+    final games = [
+      {
+        'id': 'word_search',
+        'title': 'Sopa de Letras',
+        'description': 'Encuentra las palabras ocultas',
+        'icon': Icons.search,
+        'color': const Color(0xFF9B59B6), // Violeta
+      },
+      {
+        'id': 'emoji_sorting',
+        'title': 'Clasifica y Gana',
+        'description': 'Pon cada cosa en su lugar',
+        'icon': Icons.category,
+        'color': const Color(0xFF1ABC9C), // Turquesa
+      },
+    ];
+
+    if (context.isMobile) {
+      return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: 1.2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+        ),
+        itemCount: games.length,
+        itemBuilder: (context, index) {
+          final game = games[index];
+          return _buildFunGameCard(
+            context,
+            id: game['id'] as String,
+            title: game['title'] as String,
+            description: game['description'] as String,
+            icon: game['icon'] as IconData,
+            color: game['color'] as Color,
+          );
+        },
+      );
+    }
+
+    return Row(
+      children: games.map((game) {
+        return Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: _buildFunGameCard(
+              context,
+              id: game['id'] as String,
+              title: game['title'] as String,
+              description: game['description'] as String,
+              icon: game['icon'] as IconData,
+              color: game['color'] as Color,
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildFunGameCard(
+    BuildContext context, {
+    required String id,
+    required String title,
+    required String description,
+    required IconData icon,
+    required Color color,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        if (id == 'word_search') {
+          context.push('/word-search');
+        } else if (id == 'emoji_sorting') {
+          context.push('/emoji-sorting');
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.3),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                size: 48,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.fredoka(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              description,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.fredoka(
+                fontSize: 14,
+                color: Colors.white.withValues(alpha: 0.9),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

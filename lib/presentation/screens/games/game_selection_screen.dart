@@ -12,17 +12,23 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../app/theme/colors.dart';
 import '../../../app/utils/responsive_utils.dart';
+import '../../widgets/observa_video_widget.dart';
 
-class GameSelectionScreen extends StatelessWidget {
+class GameSelectionScreen extends StatefulWidget {
   final String categoryId;
 
   const GameSelectionScreen({super.key, required this.categoryId});
 
   @override
+  State<GameSelectionScreen> createState() => _GameSelectionScreenState();
+}
+
+class _GameSelectionScreenState extends State<GameSelectionScreen> {
+  @override
   Widget build(BuildContext context) {
     // Datos de los juegos según categoría
-    final games = _getGamesByCategory(categoryId);
-    final categoryInfo = _getCategoryInfo(categoryId);
+    final games = _getGamesByCategory(widget.categoryId);
+    final categoryInfo = _getCategoryInfo(widget.categoryId);
 
     return Scaffold(
       body: Container(
@@ -39,7 +45,7 @@ class GameSelectionScreen extends StatelessWidget {
               // Header con botón de regreso
               _buildHeader(context, categoryInfo),
 
-              // Grid de juegos
+              // Contenido principal
               Expanded(
                 child: Container(
                   margin: const EdgeInsets.only(top: 20),
@@ -50,50 +56,64 @@ class GameSelectionScreen extends StatelessWidget {
                       topRight: Radius.circular(32),
                     ),
                   ),
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 1000),
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            // Grid responsive según ancho
-                            final crossAxisCount = getGridCrossAxisCount(
-                              constraints.maxWidth,
-                              minItemWidth: 180,
-                            );
-
-                            return GridView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: crossAxisCount,
-                                childAspectRatio: context.responsive(
-                                  mobile: 0.65,
-                                  tablet: 0.75,
-                                  desktop: 0.80,
-                                ),
-                                crossAxisSpacing: context.responsive(
-                                  mobile: 12.0,
-                                  tablet: 16.0,
-                                  desktop: 20.0,
-                                ),
-                                mainAxisSpacing: context.responsive(
-                                  mobile: 12.0,
-                                  tablet: 16.0,
-                                  desktop: 20.0,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Video "observa" en la izquierda (solo en desktop/tablet)
+                      if (context.isDesktop || context.isTablet)
+                        Container(
+                          width: 580,
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            children: [
+                              Expanded(
+                                child: LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    return ObservaVideoWidget(
+                                      width: 540,
+                                      height: constraints.maxHeight,
+                                    );
+                                  },
                                 ),
                               ),
-                              itemCount: games.length,
-                              itemBuilder: (context, index) {
-                                final game = games[index];
-                                return _buildGameBlock(context, game, categoryInfo);
-                              },
-                            );
-                          },
+                            ],
+                          ),
+                        ),
+
+                      // Grid de juegos
+                      Expanded(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.only(left: 8, right: 24, top: 24, bottom: 24),
+                          child: Center(
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 1000),
+                              child: LayoutBuilder(
+                                builder: (context, constraints) {
+                                  // Grid fijo de 3 columnas
+                                  const crossAxisCount = 3;
+
+                                  return GridView.builder(
+                                    shrinkWrap: true,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: crossAxisCount,
+                                      childAspectRatio: 0.85,
+                                      crossAxisSpacing: 24.0,
+                                      mainAxisSpacing: 24.0,
+                                    ),
+                                    itemCount: games.length,
+                                    itemBuilder: (context, index) {
+                                      final game = games[index];
+                                      return _buildGameBlock(context, game, categoryInfo);
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ),
@@ -185,26 +205,22 @@ class GameSelectionScreen extends StatelessWidget {
           },
           borderRadius: BorderRadius.circular(24),
           child: Padding(
-            padding: EdgeInsets.all(
-              context.responsive(mobile: 12.0, tablet: 16.0, desktop: 20.0),
-            ),
+            padding: const EdgeInsets.all(24.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Icono del juego con gradiente - Responsive
+                // Icono del juego con gradiente - Más grande
                 Container(
-                  width: context.responsive(mobile: 70.0, tablet: 85.0, desktop: 100.0),
-                  height: context.responsive(mobile: 70.0, tablet: 85.0, desktop: 100.0),
+                  width: 110.0,
+                  height: 110.0,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: categoryInfo['gradient'] as List<Color>,
                     ),
-                    borderRadius: BorderRadius.circular(
-                      context.responsive(mobile: 16.0, tablet: 20.0, desktop: 24.0),
-                    ),
+                    borderRadius: BorderRadius.circular(24.0),
                     boxShadow: [
                       BoxShadow(
                         color: (categoryInfo['gradient'] as List<Color>)[0]
@@ -217,22 +233,17 @@ class GameSelectionScreen extends StatelessWidget {
                   child: Icon(
                     game['icon'] as IconData,
                     color: Colors.white,
-                    size: context.responsive(mobile: 35.0, tablet: 42.0, desktop: 50.0),
+                    size: 55.0,
                   ),
                 ),
 
-                SizedBox(height: context.responsive(mobile: 8.0, tablet: 12.0, desktop: 14.0)),
+                const SizedBox(height: 16.0),
 
-                // Título del juego - Responsive
+                // Título del juego - Más grande
                 Text(
                   game['title'] as String,
                   style: GoogleFonts.fredoka(
-                    fontSize: getResponsiveFontSize(
-                      context,
-                      mobile: 15.0,
-                      tablet: 18.0,
-                      desktop: 21.0,
-                    ),
+                    fontSize: 20.0,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
                     height: 1.1,
@@ -242,19 +253,14 @@ class GameSelectionScreen extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
 
-                SizedBox(height: context.responsive(mobile: 4.0, tablet: 6.0, desktop: 8.0)),
+                const SizedBox(height: 8.0),
 
-                // Descripción - Más compacta
+                // Descripción - Más grande
                 Flexible(
                   child: Text(
                     game['description'] as String,
                     style: GoogleFonts.fredoka(
-                      fontSize: getResponsiveFontSize(
-                        context,
-                        mobile: 11.0,
-                        tablet: 13.0,
-                        desktop: 14.0,
-                      ),
+                      fontSize: 14.5,
                       color: AppColors.textSecondary,
                       height: 1.2,
                     ),
@@ -264,19 +270,19 @@ class GameSelectionScreen extends StatelessWidget {
                   ),
                 ),
 
-                SizedBox(height: context.responsive(mobile: 6.0, tablet: 8.0, desktop: 10.0)),
+                const SizedBox(height: 12.0),
 
-                // Badges de edad y dificultad - Compactos y sin overflow
+                // Badges de edad y dificultad - Más grandes
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Badge de edad - Flexible
+                    // Badge de edad - Más grande
                     Flexible(
                       child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: context.responsive(mobile: 6.0, tablet: 8.0, desktop: 10.0),
-                          vertical: context.responsive(mobile: 4.0, tablet: 5.0, desktop: 6.0),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10.0,
+                          vertical: 6.0,
                         ),
                         decoration: BoxDecoration(
                           color: AppColors.primary.withValues(alpha: 0.1),
@@ -285,22 +291,17 @@ class GameSelectionScreen extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.person,
-                              size: context.responsive(mobile: 13.0, tablet: 14.0, desktop: 15.0),
+                              size: 16.0,
                               color: AppColors.primary,
                             ),
-                            SizedBox(width: context.responsive(mobile: 3.0, tablet: 4.0, desktop: 5.0)),
+                            const SizedBox(width: 5.0),
                             Flexible(
                               child: Text(
                                 game['ageRange'] as String,
                                 style: GoogleFonts.fredoka(
-                                  fontSize: getResponsiveFontSize(
-                                    context,
-                                    mobile: 10.0,
-                                    tablet: 11.5,
-                                    desktop: 13.0,
-                                  ),
+                                  fontSize: 13.5,
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -311,14 +312,14 @@ class GameSelectionScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    SizedBox(width: context.responsive(mobile: 4.0, tablet: 6.0, desktop: 8.0)),
+                    const SizedBox(width: 8.0),
 
-                    // Badge de dificultad - Flexible
+                    // Badge de dificultad - Más grande
                     Flexible(
                       child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: context.responsive(mobile: 6.0, tablet: 8.0, desktop: 10.0),
-                          vertical: context.responsive(mobile: 4.0, tablet: 5.0, desktop: 6.0),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10.0,
+                          vertical: 6.0,
                         ),
                         decoration: BoxDecoration(
                           color: _getDifficultyColor(game['difficulty'] as int)
@@ -331,7 +332,7 @@ class GameSelectionScreen extends StatelessWidget {
                             game['difficulty'] as int,
                             (index) => Icon(
                               Icons.star,
-                              size: context.responsive(mobile: 12.0, tablet: 13.5, desktop: 15.0),
+                              size: 16.0,
                               color: _getDifficultyColor(game['difficulty'] as int),
                             ),
                           ),

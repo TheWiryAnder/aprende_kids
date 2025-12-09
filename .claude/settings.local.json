@@ -19,7 +19,16 @@
       "Bash(git commit -m \"$(cat <<''EOF''\nAgregar build web para deployment y actualizar .gitignore\n\n- Actualizar .gitignore para incluir build/web/ en el repositorio\n- Generar build de producción para Flutter Web\n- Necesario para desplegar en GitHub Pages, Firebase Hosting, etc.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git commit -m \"$(cat <<''EOF''\nImplementar sistema de avatar con mensajes motivacionales\n\n- Crear enum AvatarMood con 7 estados emocionales del avatar\n- Implementar banco de mensajes con 50+ frases motivacionales\n- Crear widget AvatarMessageBubble con animaciones y diseño cómic\n- Desarrollar AvatarWithMessage que combina avatar + mensaje contextual\n- Integrar bienvenida personalizada en HomeScreen\n- Agregar feedback emocional en GameResultsScreen según desempeño\n- Mensajes adaptativos: victoria, celebración, ánimo, pensando\n- Colores y resplandor del avatar según estado emocional\n- Sistema aleatorio para evitar repetición de mensajes\n- Documentación completa del sistema en README\n\nMejora la experiencia de usuario infantil con feedback positivo constante\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git commit:*)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(r)",
+      "Bash(nc:*)",
+      "Bash(python:*)",
+      "Bash(grep:*)",
+      "Bash(flutter analyze:*)",
+      "Bash(git diff:*)",
+      "Bash(for file in suma_aventurera asociacion_creativa artista_emojis mezcla_colores disenador_monstruos ecosistemas_mundo planeta_tierra estados_materia cadena_alimenticia)",
+      "Bash(do echo \"File: $file_game.dart\")",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

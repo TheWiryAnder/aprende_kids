@@ -40,9 +40,10 @@ dependencies:
   confetti: ^0.7.0
   shimmer: ^3.0.0
 
-  # Audio
+  # Audio & Video
   audioplayers: ^5.2.1
   just_audio: ^0.9.36
+  video_player: ^2.8.2
 
   # Utils
   intl: ^0.18.1
@@ -78,6 +79,7 @@ flutter:
     - assets/avatar/hands/
     - assets/avatar/accessories/
     - assets/avatar/backgrounds/
+    - assets/animacion/
 
   # Fuentes: Se usan desde Google Fonts (no requieren archivos locales)
   # Cuando tengas los archivos .ttf, descomenta esto:

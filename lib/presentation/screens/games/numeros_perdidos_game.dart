@@ -21,6 +21,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../app/theme/colors.dart';
+import '../../widgets/game_video_widget.dart';
 
 class NumerosPerdidosGame extends StatefulWidget {
   const NumerosPerdidosGame({super.key});
@@ -187,6 +188,13 @@ class _NumerosPerdidosGameState extends State<NumerosPerdidosGame> {
     });
   }
 
+  GameVideoType _getCurrentVideoType() {
+    if (_showFeedback) {
+      return _isCorrect ? GameVideoType.excelente : GameVideoType.intentalo;
+    }
+    return GameVideoType.pensando;
+  }
+
   Color _getOptionColor(int option) {
     if (!_showFeedback) return Colors.white;
     if (option == _selectedAnswer) {
@@ -211,6 +219,9 @@ class _NumerosPerdidosGameState extends State<NumerosPerdidosGame> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final showVideo = screenWidth > 600; // Mostrar en tablet y desktop
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -228,41 +239,70 @@ class _NumerosPerdidosGameState extends State<NumerosPerdidosGame> {
             children: [
               _buildHeader(),
               Expanded(
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 800),
-                    child: Container(
-                      margin: const EdgeInsets.all(16),
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.2),
-                            blurRadius: 15,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: SingleChildScrollView(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Video en la izquierda (tablet y desktop)
+                    if (showVideo)
+                      Container(
+                        width: 450,
+                        padding: const EdgeInsets.all(20),
                         child: Column(
-                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            const SizedBox(height: 16),
-                            _buildCharacter(),
-                            const SizedBox(height: 20),
-                            _buildProblem(),
-                            const SizedBox(height: 20),
-                            _buildOptions(),
-                            const SizedBox(height: 16),
-                            if (_showFeedback) _buildFeedback(),
-                            const SizedBox(height: 16),
+                            Expanded(
+                              child: LayoutBuilder(
+                                builder: (context, constraints) {
+                                  return GameVideoWidget(
+                                    videoType: _getCurrentVideoType(),
+                                    width: 400,
+                                    height: constraints.maxHeight,
+                                  );
+                                },
+                              ),
+                            ),
                           ],
                         ),
                       ),
+                    // Contenido del juego
+                    Expanded(
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 800),
+                          child: Container(
+                            margin: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.2),
+                                  blurRadius: 15,
+                                  offset: const Offset(0, 5),
+                                ),
+                              ],
+                            ),
+                            child: SingleChildScrollView(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const SizedBox(height: 16),
+                                  _buildCharacter(),
+                                  const SizedBox(height: 20),
+                                  _buildProblem(),
+                                  const SizedBox(height: 20),
+                                  _buildOptions(),
+                                  const SizedBox(height: 16),
+                                  if (_showFeedback) _buildFeedback(),
+                                  const SizedBox(height: 16),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ],
