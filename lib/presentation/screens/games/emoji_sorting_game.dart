@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../domain/models/emoji_sorting_model.dart';
 import '../../../domain/services/emoji_sorting_generator.dart';
 import '../../widgets/game_video_widget.dart';
+import 'game_won_screen.dart';
 
 class EmojiSortingGame extends StatefulWidget {
   final EmojiSortingLevel level;
@@ -162,139 +163,33 @@ class _EmojiSortingGameState extends State<EmojiSortingGame> with SingleTickerPr
     // Calcular monedas ganadas
     final coins = LevelConfig.calculateCoins(_timeRemaining, _timeLimit);
 
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Colors.teal.shade300, Colors.teal.shade500],
-            ),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // GIF de celebración
-              const GameVideoWidget(
-                videoType: GameVideoType.excelente,
-                width: 200,
-                height: 200,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                '¡Felicitaciones! 🎉',
-                style: GoogleFonts.fredoka(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                '¡Clasificaste todos los emojis correctamente!',
-                style: GoogleFonts.fredoka(
-                  fontSize: 18,
-                  color: Colors.white,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              // Monedas ganadas
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text('💰', style: TextStyle(fontSize: 32)),
-                        const SizedBox(width: 12),
-                        Text(
-                          '$coins Monedas',
-                          style: GoogleFonts.fredoka(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.amber.shade700,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Tiempo: ${_formatTime(_timeRemaining)}',
-                      style: GoogleFonts.fredoka(
-                        fontSize: 14,
-                        color: Colors.grey.shade700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      context.pop();
-                    },
-                    style: TextButton.styleFrom(
-                      backgroundColor: Colors.white.withValues(alpha: 0.3),
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      'Salir',
-                      style: GoogleFonts.fredoka(
-                        fontSize: 16,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      setState(() {
-                        _gameEnded = false;
-                        _generateNewGame();
-                        _initializeTimer();
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.teal.shade700,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      'Jugar de Nuevo',
-                      style: GoogleFonts.fredoka(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+    // Calcular total de emojis
+    final totalEmojis = _categories.fold<int>(
+      0,
+      (sum, category) => sum + category.correctEmojis.length,
+    );
+
+    // Navegar a la pantalla unificada de victoria
+    Navigator.push<void>(
+      context,
+      MaterialPageRoute<void>(
+        builder: (context) => GameWonScreen(
+          gameTitle: 'Clasifica y Gana',
+          score: (totalEmojis * 100 ~/ totalEmojis), // 100% porque ganó
+          totalQuestions: totalEmojis,
+          correctAnswers: totalEmojis,
+          timeRemaining: _timeRemaining,
+          timeLimit: _timeLimit,
+          coins: coins,
+          primaryColor: Colors.teal.shade400,
+          accentColor: Colors.teal.shade700,
+          onPlayAgain: () {
+            setState(() {
+              _gameEnded = false;
+              _generateNewGame();
+              _initializeTimer();
+            });
+          },
         ),
       ),
     );
