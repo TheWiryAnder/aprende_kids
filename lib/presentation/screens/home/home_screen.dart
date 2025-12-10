@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
       await Scrollable.ensureVisible(
         key.currentContext!,
         duration: const Duration(milliseconds: 600),
-        alignment: 0.4, // ✅ BALANCEADO: 0.4 = elemento al 40% (no tan arriba, no tan abajo)
+        alignment: 0.6, // ✅ REDUCIDO: 0.6 = menos scroll, solo hasta mostrar tarjetas
         curve: Curves.easeInOut,
       );
 
@@ -445,8 +445,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
                             // ✅ COLCHÓN DE SCROLL: Espacio extra para que el tutorial
                             // pueda mostrar el globo completo en elementos inferiores
-                            // REDUCIDO a 250px para balance entre visibilidad y espacio
-                            const SizedBox(height: 250),
+                            // MÍNIMO: 180px - solo para mostrar tarjetas sin exceso
+                            const SizedBox(height: 180),
                           ],
                         ),
                       ),
