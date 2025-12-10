@@ -89,15 +89,16 @@ class _GameSelectionScreenState extends State<GameSelectionScreen> {
                               constraints: const BoxConstraints(maxWidth: 1000),
                               child: LayoutBuilder(
                                 builder: (context, constraints) {
-                                  // Grid fijo de 3 columnas
-                                  const crossAxisCount = 3;
+                                  // ✅ CORRECCIÓN: Responsive - 1 columna en móvil, 2-3 en tablet/desktop
+                                  final crossAxisCount = context.isMobile ? 1 : (context.isTablet ? 2 : 3);
+                                  final aspectRatio = context.isMobile ? 2.5 : 0.85;
 
                                   return GridView.builder(
                                     shrinkWrap: true,
                                     physics: const NeverScrollableScrollPhysics(),
-                                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                                       crossAxisCount: crossAxisCount,
-                                      childAspectRatio: 0.85,
+                                      childAspectRatio: aspectRatio, // ✅ Rectángulo horizontal en móvil
                                       crossAxisSpacing: 24.0,
                                       mainAxisSpacing: 24.0,
                                     ),

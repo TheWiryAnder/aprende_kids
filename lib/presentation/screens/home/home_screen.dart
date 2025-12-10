@@ -465,13 +465,14 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     ];
 
+    // ✅ CORRECCIÓN: En móvil 1 columna vertical, en desktop: Row horizontal
     if (context.isMobile) {
       return GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 1.2,
+          crossAxisCount: 1, // ✅ 1 columna en móvil
+          childAspectRatio: 2.5, // ✅ Rectángulo horizontal cómodo
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
         ),
@@ -933,14 +934,14 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     ];
 
-    // En móvil: Grid de 2 columnas, en desktop: Row horizontal
+    // ✅ CORRECCIÓN: En móvil 1 columna vertical, en desktop: Row horizontal
     if (context.isMobile) {
       return GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.75,
+          crossAxisCount: 1, // ✅ 1 columna en móvil para ocupar todo el ancho
+          childAspectRatio: 2.5, // ✅ Rectángulo horizontal cómodo
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
         ),
