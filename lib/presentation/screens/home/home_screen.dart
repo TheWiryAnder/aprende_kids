@@ -38,6 +38,9 @@ class _HomeScreenState extends State<HomeScreen> {
   final TutorialService _tutorialService = TutorialService();
   TutorialCoachMark? _tutorialCoachMark;
 
+  // ✅ SCROLL CONTROLLER: Para hacer scroll automático en el tutorial
+  final ScrollController _scrollController = ScrollController();
+
   // GlobalKeys para los elementos del tutorial
   final GlobalKey _avatarKey = GlobalKey();
   final GlobalKey _categoriesKey = GlobalKey();
@@ -62,6 +65,24 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  /// Hace scroll automático al elemento del tutorial
+  /// Garantiza que el elemento esté visible antes de mostrar el globo
+  Future<void> _scrollToTarget(GlobalKey key) async {
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+
+    if (key.currentContext != null) {
+      await Scrollable.ensureVisible(
+        key.currentContext!,
+        duration: const Duration(milliseconds: 500),
+        alignment: 0.5, // Centrar el elemento en la pantalla
+        curve: Curves.easeInOut,
+      );
+
+      // Esperar un poco más para que el scroll termine completamente
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    }
+  }
+
   /// Crea y muestra el tutorial interactivo
   void _showTutorial() {
     final targets = _createTutorialTargets();
@@ -71,6 +92,13 @@ class _HomeScreenState extends State<HomeScreen> {
       colorShadow: Colors.black,
       paddingFocus: 10,
       opacityShadow: 0.8,
+      // ✅ SCROLL AUTOMÁTICO: Antes de mostrar cada paso, hacer scroll al elemento
+      onClickTarget: (target) {
+        // Identificar qué elemento se está mostrando y hacer scroll
+        if (target.keyTarget != null) {
+          _scrollToTarget(target.keyTarget!);
+        }
+      },
       onFinish: () {
         _tutorialService.markTutorialAsCompleted();
         print('✅ Tutorial completado');
@@ -94,6 +122,7 @@ class _HomeScreenState extends State<HomeScreen> {
         keyTarget: _avatarKey,
         shape: ShapeLightFocus.Circle,
         radius: 10,
+        enableOverlayTab: true,
         contents: [
           TargetContent(
             align: ContentAlign.bottom,
@@ -118,6 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
         keyTarget: _coinsKey,
         shape: ShapeLightFocus.RRect,
         radius: 10,
+        enableOverlayTab: true,
         contents: [
           TargetContent(
             align: ContentAlign.bottom,
@@ -142,6 +172,7 @@ class _HomeScreenState extends State<HomeScreen> {
         keyTarget: _categoriesKey,
         shape: ShapeLightFocus.RRect,
         radius: 10,
+        enableOverlayTab: true,
         contents: [
           TargetContent(
             align: ContentAlign.bottom,
@@ -160,12 +191,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
 
-      // Paso 4: Zona de Juegos
+      // Paso 4: Zona de Juegos (CRÍTICO: Este está fuera de vista en móvil)
       TargetFocus(
         identify: "games_zone",
         keyTarget: _gamesZoneKey,
         shape: ShapeLightFocus.RRect,
         radius: 10,
+        enableOverlayTab: true,
         contents: [
           TargetContent(
             align: ContentAlign.top,
@@ -310,6 +342,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _tutorialCoachMark?.finish();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -367,6 +400,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       child: SingleChildScrollView(
+                        controller: _scrollController,
                         padding: const EdgeInsets.all(24),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
