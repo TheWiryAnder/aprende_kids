@@ -91,7 +91,7 @@ class _GameSelectionScreenState extends State<GameSelectionScreen> {
                                 builder: (context, constraints) {
                                   // ✅ CORRECCIÓN: Responsive - 1 columna en móvil, 2-3 en tablet/desktop
                                   final crossAxisCount = context.isMobile ? 1 : (context.isTablet ? 2 : 3);
-                                  final aspectRatio = context.isMobile ? 2.5 : 0.85;
+                                  final aspectRatio = context.isMobile ? 3.5 : 0.85;
 
                                   return GridView.builder(
                                     shrinkWrap: true,
@@ -185,10 +185,12 @@ class _GameSelectionScreenState extends State<GameSelectionScreen> {
     Map<String, dynamic> game,
     Map<String, dynamic> categoryInfo,
   ) {
+    final isMobile = context.isMobile;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(isMobile ? 16 : 24),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
@@ -204,146 +206,279 @@ class _GameSelectionScreenState extends State<GameSelectionScreen> {
             // Navegar al juego específico
             context.push('/play/${game['id']}');
           },
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(isMobile ? 16 : 24),
           child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Icono del juego con gradiente - Más grande
-                Container(
-                  width: 110.0,
-                  height: 110.0,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: categoryInfo['gradient'] as List<Color>,
-                    ),
-                    borderRadius: BorderRadius.circular(24.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: (categoryInfo['gradient'] as List<Color>)[0]
-                            .withValues(alpha: 0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    game['icon'] as IconData,
-                    color: Colors.white,
-                    size: 55.0,
-                  ),
-                ),
-
-                const SizedBox(height: 16.0),
-
-                // Título del juego - Más grande
-                Text(
-                  game['title'] as String,
-                  style: GoogleFonts.fredoka(
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                    height: 1.1,
-                  ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-
-                const SizedBox(height: 8.0),
-
-                // Descripción - Más grande
-                Flexible(
-                  child: Text(
-                    game['description'] as String,
-                    style: GoogleFonts.fredoka(
-                      fontSize: 14.5,
-                      color: AppColors.textSecondary,
-                      height: 1.2,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-
-                const SizedBox(height: 12.0),
-
-                // Badges de edad y dificultad - Más grandes
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Badge de edad - Más grande
-                    Flexible(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10.0,
-                          vertical: 6.0,
-                        ),
+            padding: EdgeInsets.all(isMobile ? 12.0 : 24.0),
+            child: isMobile
+                ? Row(
+                    children: [
+                      // Icono del juego en móvil - Más pequeño y a la izquierda
+                      Container(
+                        width: 60.0,
+                        height: 60.0,
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.person,
-                              size: 16.0,
-                              color: AppColors.primary,
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: categoryInfo['gradient'] as List<Color>,
+                          ),
+                          borderRadius: BorderRadius.circular(12.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: (categoryInfo['gradient'] as List<Color>)[0]
+                                  .withValues(alpha: 0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
                             ),
-                            const SizedBox(width: 5.0),
-                            Flexible(
-                              child: Text(
-                                game['ageRange'] as String,
-                                style: GoogleFonts.fredoka(
-                                  fontSize: 13.5,
-                                  color: AppColors.primary,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                overflow: TextOverflow.ellipsis,
+                          ],
+                        ),
+                        child: Icon(
+                          game['icon'] as IconData,
+                          color: Colors.white,
+                          size: 32.0,
+                        ),
+                      ),
+
+                      const SizedBox(width: 12),
+
+                      // Texto a la derecha en móvil
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Título del juego
+                            Text(
+                              game['title'] as String,
+                              style: GoogleFonts.fredoka(
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
+                                height: 1.1,
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+
+                            const SizedBox(height: 4.0),
+
+                            // Descripción
+                            Text(
+                              game['description'] as String,
+                              style: GoogleFonts.fredoka(
+                                fontSize: 12.0,
+                                color: AppColors.textSecondary,
+                                height: 1.2,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+
+                            const SizedBox(height: 6.0),
+
+                            // Badges de edad y dificultad
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Badge de edad - Compacto
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6.0,
+                                    vertical: 3.0,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(
+                                        Icons.person,
+                                        size: 12.0,
+                                        color: AppColors.primary,
+                                      ),
+                                      const SizedBox(width: 3.0),
+                                      Text(
+                                        game['ageRange'] as String,
+                                        style: GoogleFonts.fredoka(
+                                          fontSize: 11.0,
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 6.0),
+
+                                // Badge de dificultad - Compacto
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6.0,
+                                    vertical: 3.0,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: _getDifficultyColor(game['difficulty'] as int)
+                                        .withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: List.generate(
+                                      game['difficulty'] as int,
+                                      (index) => Icon(
+                                        Icons.star,
+                                        size: 12.0,
+                                        color: _getDifficultyColor(game['difficulty'] as int),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 8.0),
-
-                    // Badge de dificultad - Más grande
-                    Flexible(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10.0,
-                          vertical: 6.0,
-                        ),
+                    ],
+                  )
+                : Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Icono del juego con gradiente - Más grande
+                      Container(
+                        width: 110.0,
+                        height: 110.0,
                         decoration: BoxDecoration(
-                          color: _getDifficultyColor(game['difficulty'] as int)
-                              .withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: List.generate(
-                            game['difficulty'] as int,
-                            (index) => Icon(
-                              Icons.star,
-                              size: 16.0,
-                              color: _getDifficultyColor(game['difficulty'] as int),
-                            ),
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: categoryInfo['gradient'] as List<Color>,
                           ),
+                          borderRadius: BorderRadius.circular(24.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: (categoryInfo['gradient'] as List<Color>)[0]
+                                  .withValues(alpha: 0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          game['icon'] as IconData,
+                          color: Colors.white,
+                          size: 55.0,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+
+                      const SizedBox(height: 16.0),
+
+                      // Título del juego - Más grande
+                      Text(
+                        game['title'] as String,
+                        style: GoogleFonts.fredoka(
+                          fontSize: 20.0,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                          height: 1.1,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+
+                      const SizedBox(height: 8.0),
+
+                      // Descripción - Más grande
+                      Flexible(
+                        child: Text(
+                          game['description'] as String,
+                          style: GoogleFonts.fredoka(
+                            fontSize: 14.5,
+                            color: AppColors.textSecondary,
+                            height: 1.2,
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+
+                      const SizedBox(height: 12.0),
+
+                      // Badges de edad y dificultad - Más grandes
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Badge de edad - Más grande
+                          Flexible(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10.0,
+                                vertical: 6.0,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.person,
+                                    size: 16.0,
+                                    color: AppColors.primary,
+                                  ),
+                                  const SizedBox(width: 5.0),
+                                  Flexible(
+                                    child: Text(
+                                      game['ageRange'] as String,
+                                      style: GoogleFonts.fredoka(
+                                        fontSize: 13.5,
+                                        color: AppColors.primary,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8.0),
+
+                          // Badge de dificultad - Más grande
+                          Flexible(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10.0,
+                                vertical: 6.0,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _getDifficultyColor(game['difficulty'] as int)
+                                    .withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: List.generate(
+                                  game['difficulty'] as int,
+                                  (index) => Icon(
+                                    Icons.star,
+                                    size: 16.0,
+                                    color: _getDifficultyColor(game['difficulty'] as int),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
           ),
         ),
       ),
