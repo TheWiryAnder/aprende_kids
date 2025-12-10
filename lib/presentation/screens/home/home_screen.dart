@@ -13,11 +13,13 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 import '../../bloc/auth/auth_bloc.dart';
 import '../../bloc/auth/auth_event.dart';
 import '../../bloc/auth/auth_state.dart';
 import '../../../app/theme/colors.dart';
 import '../../../domain/services/avatar_service.dart';
+import '../../../domain/services/tutorial_service.dart';
 import '../../widgets/avatar_widget.dart';
 import '../../../app/utils/responsive_utils.dart';
 import '../../widgets/welcome_video_overlay.dart';
@@ -31,6 +33,285 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool _hasShownWelcome = false;
+
+  // Tutorial Coach Mark
+  final TutorialService _tutorialService = TutorialService();
+  TutorialCoachMark? _tutorialCoachMark;
+
+  // GlobalKeys para los elementos del tutorial
+  final GlobalKey _avatarKey = GlobalKey();
+  final GlobalKey _categoriesKey = GlobalKey();
+  final GlobalKey _gamesZoneKey = GlobalKey();
+  final GlobalKey _coinsKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAndShowTutorial();
+  }
+
+  /// Verifica si debe mostrar el tutorial y lo ejecuta
+  Future<void> _checkAndShowTutorial() async {
+    // Esperar un poco para que la UI se renderice completamente
+    await Future<void>.delayed(const Duration(milliseconds: 1500));
+
+    final hasSeenTutorial = await _tutorialService.hasSeenTutorial();
+
+    if (!hasSeenTutorial && mounted) {
+      _showTutorial();
+    }
+  }
+
+  /// Crea y muestra el tutorial interactivo
+  void _showTutorial() {
+    final targets = _createTutorialTargets();
+
+    _tutorialCoachMark = TutorialCoachMark(
+      targets: targets,
+      colorShadow: Colors.black,
+      paddingFocus: 10,
+      opacityShadow: 0.8,
+      onFinish: () {
+        _tutorialService.markTutorialAsCompleted();
+        print('✅ Tutorial completado');
+      },
+      onSkip: () {
+        _tutorialService.markTutorialAsCompleted();
+        print('⏭️ Tutorial omitido');
+        return true;
+      },
+    );
+
+    _tutorialCoachMark?.show(context: context);
+  }
+
+  /// Crea los targets (pasos) del tutorial
+  List<TargetFocus> _createTutorialTargets() {
+    return [
+      // Paso 1: Bienvenida - Avatar
+      TargetFocus(
+        identify: "avatar_welcome",
+        keyTarget: _avatarKey,
+        shape: ShapeLightFocus.Circle,
+        radius: 10,
+        contents: [
+          TargetContent(
+            align: ContentAlign.bottom,
+            builder: (context, controller) {
+              return _buildTutorialContent(
+                title: '¡Hola! 👋',
+                description: 'Soy tu asistente. ¡Bienvenido a Aprende Kids! Aquí aprenderemos jugando.',
+                icon: Icons.waving_hand,
+                color: Colors.blue,
+                onNext: controller.next,
+                onSkip: controller.skip,
+                showSkip: true,
+              );
+            },
+          ),
+        ],
+      ),
+
+      // Paso 2: Monedas y Puntos
+      TargetFocus(
+        identify: "coins_points",
+        keyTarget: _coinsKey,
+        shape: ShapeLightFocus.RRect,
+        radius: 10,
+        contents: [
+          TargetContent(
+            align: ContentAlign.bottom,
+            builder: (context, controller) {
+              return _buildTutorialContent(
+                title: '¡Tus Premios! 💰',
+                description: '¡Aquí verás tus monedas y puntos! Gana más completando lecciones y juegos.',
+                icon: Icons.monetization_on,
+                color: Colors.amber,
+                onNext: controller.next,
+                onSkip: controller.skip,
+                showSkip: true,
+              );
+            },
+          ),
+        ],
+      ),
+
+      // Paso 3: Categorías de Aprendizaje
+      TargetFocus(
+        identify: "categories",
+        keyTarget: _categoriesKey,
+        shape: ShapeLightFocus.RRect,
+        radius: 10,
+        contents: [
+          TargetContent(
+            align: ContentAlign.bottom,
+            builder: (context, controller) {
+              return _buildTutorialContent(
+                title: 'Tus Materias 📚',
+                description: 'Aquí tienes tus materias favoritas: Matemáticas, Lenguaje, Ciencias y más. ¡Toca una para empezar!',
+                icon: Icons.school,
+                color: Colors.green,
+                onNext: controller.next,
+                onSkip: controller.skip,
+                showSkip: true,
+              );
+            },
+          ),
+        ],
+      ),
+
+      // Paso 4: Zona de Juegos
+      TargetFocus(
+        identify: "games_zone",
+        keyTarget: _gamesZoneKey,
+        shape: ShapeLightFocus.RRect,
+        radius: 10,
+        contents: [
+          TargetContent(
+            align: ContentAlign.top,
+            builder: (context, controller) {
+              return _buildTutorialContent(
+                title: '¡Hora de Jugar! 🎮',
+                description: 'Cuando quieras distraerte, baja aquí para jugar Sopa de Letras, Clasifica y Gana, y ganar monedas extra.',
+                icon: Icons.sports_esports,
+                color: Colors.purple,
+                onNext: () {
+                  controller.next();
+                },
+                onSkip: controller.skip,
+                showSkip: false,
+                isLast: true,
+              );
+            },
+          ),
+        ],
+      ),
+    ];
+  }
+
+  /// Widget personalizado para el contenido del tutorial (estilo cómic)
+  Widget _buildTutorialContent({
+    required String title,
+    required String description,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onNext,
+    required VoidCallback onSkip,
+    bool showSkip = true,
+    bool isLast = false,
+  }) {
+    return Container(
+      margin: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+        border: Border.all(
+          color: color,
+          width: 3,
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header con icono y título
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  color: color,
+                  size: 30,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: GoogleFonts.fredoka(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Descripción
+          Text(
+            description,
+            style: GoogleFonts.fredoka(
+              fontSize: 16,
+              color: Colors.black87,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Botones
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              // Botón Saltar
+              if (showSkip)
+                TextButton(
+                  onPressed: onSkip,
+                  child: Text(
+                    'Saltar',
+                    style: GoogleFonts.fredoka(
+                      fontSize: 16,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ),
+              const SizedBox(width: 12),
+
+              // Botón Siguiente/Entendido
+              ElevatedButton(
+                onPressed: onNext,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: color,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  isLast ? '¡Entendido!' : 'Siguiente',
+                  style: GoogleFonts.fredoka(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _tutorialCoachMark?.finish();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -90,8 +371,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Puntuación y Ranking
-                            _buildScoreAndRanking(context),
+                            // Puntuación y Ranking (con GlobalKey para tutorial)
+                            Container(
+                              key: _coinsKey,
+                              child: _buildScoreAndRanking(context),
+                            ),
 
                             const SizedBox(height: 32),
 
@@ -107,13 +391,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
                             const SizedBox(height: 24),
 
-                            // Categorías en fila horizontal
-                            _buildCategoriesRow(context),
+                            // Categorías en fila horizontal (con GlobalKey para tutorial)
+                            Container(
+                              key: _categoriesKey,
+                              child: _buildCategoriesRow(context),
+                            ),
 
                             const SizedBox(height: 48),
 
-                            // Nueva sección: Zona de Juegos
-                            _buildGamesZoneSection(context),
+                            // Nueva sección: Zona de Juegos (con GlobalKey para tutorial)
+                            Container(
+                              key: _gamesZoneKey,
+                              child: _buildGamesZoneSection(context),
+                            ),
                           ],
                         ),
                       ),
@@ -302,39 +592,42 @@ class _HomeScreenState extends State<HomeScreen> {
               onTap: () => context.push('/profile'),
               child: Row(
                 children: [
-                  // Avatar con StreamBuilder
+                  // Avatar con StreamBuilder (con GlobalKey para tutorial)
                   if (user != null)
-                    StreamBuilder(
-                      stream: avatarService.avatarStream(user.uid),
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData && snapshot.data != null) {
-                          return SimpleAvatarWidget(
-                            avatar: snapshot.data!,
-                            size: 60,
+                    Container(
+                      key: _avatarKey,
+                      child: StreamBuilder(
+                        stream: avatarService.avatarStream(user.uid),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData && snapshot.data != null) {
+                            return SimpleAvatarWidget(
+                              avatar: snapshot.data!,
+                              size: 60,
+                            );
+                          }
+                          // Placeholder mientras carga
+                          return Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.1),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.person,
+                              size: 32,
+                              color: AppColors.primary,
+                            ),
                           );
-                        }
-                        // Placeholder mientras carga
-                        return Container(
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
-                                blurRadius: 8,
-                                spreadRadius: 2,
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.person,
-                            size: 32,
-                            color: AppColors.primary,
-                          ),
-                        );
-                      },
+                        },
+                      ),
                     )
                   else
                     Container(
@@ -386,6 +679,53 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
+
+          // Widget de monedas (con StreamBuilder para actualización en tiempo real)
+          if (user != null)
+            StreamBuilder<DocumentSnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(user.uid)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                int coins = 0;
+                if (snapshot.hasData && snapshot.data!.exists) {
+                  final data = snapshot.data!.data() as Map<String, dynamic>?;
+                  coins = data?['coins'] as int? ?? 0;
+                }
+
+                return Container(
+                  margin: const EdgeInsets.only(right: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade400,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('💰', style: TextStyle(fontSize: 18)),
+                      const SizedBox(width: 6),
+                      Text(
+                        coins.toString(),
+                        style: GoogleFonts.fredoka(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.brown.shade800,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
 
           // Botón de tienda
           IconButton(

@@ -39,6 +39,7 @@ dependencies:
   flutter_animate: ^4.3.0
   confetti: ^0.7.0
   shimmer: ^3.0.0
+  tutorial_coach_mark: ^1.2.11
 
   # Audio & Video
   audioplayers: ^5.2.1

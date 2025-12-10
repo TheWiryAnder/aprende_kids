@@ -28,7 +28,8 @@
       "Bash(git diff:*)",
       "Bash(for file in suma_aventurera asociacion_creativa artista_emojis mezcla_colores disenador_monstruos ecosistemas_mundo planeta_tierra estados_materia cadena_alimenticia)",
       "Bash(do echo \"File: $file_game.dart\")",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

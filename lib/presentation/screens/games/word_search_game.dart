@@ -617,7 +617,7 @@ class _WordSearchGameState extends State<WordSearchGame> {
                       flex: 2,
                       child: Center(
                         child: Padding(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                           child: _buildWordList(),
                         ),
                       ),
@@ -719,58 +719,78 @@ class _WordSearchGameState extends State<WordSearchGame> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Calcular tamaño de celda dinámicamente para que encaje en el espacio disponible
-        final availableWidth = constraints.maxWidth - 48;
-        final cellSize = (availableWidth / gridSize).clamp(30.0, 60.0);
+        // Calcular el tamaño máximo disponible (el menor entre ancho y alto)
+        final maxSize = constraints.maxWidth < constraints.maxHeight
+            ? constraints.maxWidth
+            : constraints.maxHeight;
 
-        return Container(
-          margin: const EdgeInsets.all(16),
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: GestureDetector(
-            // Capturar eventos de arrastre continuo
-            onPanStart: (details) {
-              final localPos = details.localPosition;
-              final row = (localPos.dy / (cellSize + 4)).floor(); // +4 por margin
-              final col = (localPos.dx / (cellSize + 4)).floor();
+        // Márgenes y padding adaptivos según el tamaño de la cuadrícula
+        final margin = gridSize >= 12 ? 8.0 : (gridSize >= 10 ? 12.0 : 16.0);
+        final padding = gridSize >= 12 ? 4.0 : (gridSize >= 10 ? 6.0 : 8.0);
+        final spacing = gridSize >= 12 ? 1.5 : 2.0;
 
-              if (row >= 0 && row < gridSize && col >= 0 && col < gridSize) {
-                _onCellTapDown(row, col);
-              }
-            },
-            onPanUpdate: (details) {
-              final localPos = details.localPosition;
-              final row = (localPos.dy / (cellSize + 4)).floor();
-              final col = (localPos.dx / (cellSize + 4)).floor();
+        // Tamaño del contenedor de la cuadrícula (cuadrado perfecto)
+        final gridContainerSize = maxSize - (margin * 2);
 
-              if (row >= 0 && row < gridSize && col >= 0 && col < gridSize) {
-                _onCellDragUpdate(row, col);
-              }
-            },
-            onPanEnd: (_) {
-              _onCellTapUp();
-            },
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: List.generate(
-                gridSize,
-                (row) => Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: List.generate(
-                    gridSize,
-                    (col) => _buildCell(row, col, cellSize),
-                  ),
+        // Tamaño de cada celda (dinámico según el nivel)
+        final totalSpacing = spacing * (gridSize - 1);
+        final cellSize = (gridContainerSize - (padding * 2) - totalSpacing) / gridSize;
+
+        return Center(
+          child: Container(
+            width: gridContainerSize,
+            height: gridContainerSize,
+            margin: EdgeInsets.all(margin),
+            padding: EdgeInsets.all(padding),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(gridSize >= 12 ? 12 : 16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
                 ),
+              ],
+            ),
+            child: GestureDetector(
+              // Capturar eventos de arrastre continuo
+              onPanStart: (details) {
+                final localPos = details.localPosition;
+                final row = (localPos.dy / (cellSize + spacing)).floor();
+                final col = (localPos.dx / (cellSize + spacing)).floor();
+
+                if (row >= 0 && row < gridSize && col >= 0 && col < gridSize) {
+                  _onCellTapDown(row, col);
+                }
+              },
+              onPanUpdate: (details) {
+                final localPos = details.localPosition;
+                final row = (localPos.dy / (cellSize + spacing)).floor();
+                final col = (localPos.dx / (cellSize + spacing)).floor();
+
+                if (row >= 0 && row < gridSize && col >= 0 && col < gridSize) {
+                  _onCellDragUpdate(row, col);
+                }
+              },
+              onPanEnd: (_) {
+                _onCellTapUp();
+              },
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: gridSize, // Dinámico: 8, 10 o 12
+                  mainAxisSpacing: spacing,
+                  crossAxisSpacing: spacing,
+                  childAspectRatio: 1.0, // Celdas cuadradas
+                ),
+                itemCount: gridSize * gridSize,
+                itemBuilder: (context, index) {
+                  final row = index ~/ gridSize;
+                  final col = index % gridSize;
+                  return _buildCell(row, col, cellSize);
+                },
               ),
             ),
           ),
@@ -816,29 +836,35 @@ class _WordSearchGameState extends State<WordSearchGame> {
       backgroundColor = Colors.white;
     }
 
+    // Calcular border radius y width dinámicamente (más pequeños en niveles difíciles)
+    final borderRadius = size > 40 ? 8.0 : size > 30 ? 6.0 : 4.0;
+    final borderWidth = size > 35 ? 2.0 : (size > 25 ? 1.5 : 1.0);
+
     return Container(
-      width: size,
-      height: size,
-      margin: const EdgeInsets.all(2),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(
           color: isSelected
               ? Colors.blue.shade400
               : isFound
                   ? (foundWordColor ?? Colors.green.shade400)
                   : Colors.grey.shade300,
-          width: isSelected ? 2 : (isFound ? 2 : 1),
+          width: (isSelected || isFound) ? borderWidth : (borderWidth * 0.7),
         ),
       ),
       child: Center(
-        child: Text(
-          _wordSearch.grid[row][col],
-          style: GoogleFonts.fredoka(
-            fontSize: size * 0.4,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
+        child: Padding(
+          padding: EdgeInsets.all(size * 0.08), // Padding proporcional reducido
+          child: FittedBox(
+            fit: BoxFit.contain,
+            child: Text(
+              _wordSearch.grid[row][col],
+              style: GoogleFonts.fredoka(
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
           ),
         ),
       ),
@@ -846,9 +872,12 @@ class _WordSearchGameState extends State<WordSearchGame> {
   }
 
   Widget _buildWordList() {
+    final numWords = _wordSearch.words.length;
+    final numRows = (numWords / 2).ceil(); // 2 columnas
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -861,58 +890,80 @@ class _WordSearchGameState extends State<WordSearchGame> {
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'Palabras a encontrar:',
+            'Palabras:',
             style: GoogleFonts.fredoka(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: Colors.purple.shade700,
             ),
+            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: _wordSearch.words.map((word) {
-              final isFound = _foundWords.contains(word);
+          const SizedBox(height: 12),
+          // Layout en 2 columnas usando GridView
+          Expanded(
+            child: GridView.builder(
+              shrinkWrap: true,
+              physics: numRows > 6
+                  ? const BouncingScrollPhysics()
+                  : const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2, // 2 columnas
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+                childAspectRatio: 3.5, // Celdas más anchas y bajas
+              ),
+              itemCount: _wordSearch.words.length,
+              itemBuilder: (context, index) {
+                final word = _wordSearch.words[index];
+                final isFound = _foundWords.contains(word);
 
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(
-                  color: isFound ? _wordColors[word]!.withValues(alpha: 0.4) : Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: isFound ? _wordColors[word]! : Colors.grey.shade300,
-                    width: 2,
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isFound
+                        ? _wordColors[word]!.withValues(alpha: 0.4)
+                        : Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isFound ? _wordColors[word]! : Colors.grey.shade300,
+                      width: 2,
+                    ),
                   ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      isFound ? Icons.check_circle : Icons.circle_outlined,
-                      color: isFound ? Colors.green.shade700 : Colors.grey.shade400,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      word,
-                      style: GoogleFonts.fredoka(
-                        fontSize: 16,
-                        fontWeight: isFound ? FontWeight.bold : FontWeight.w600,
-                        decoration: isFound ? TextDecoration.lineThrough : null,
-                        decorationThickness: 3,
-                        decorationColor: Colors.green.shade700,
-                        color: isFound ? Colors.black45 : Colors.black87,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        isFound ? Icons.check_circle : Icons.circle_outlined,
+                        color: isFound ? Colors.green.shade700 : Colors.grey.shade400,
+                        size: 16,
                       ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          word,
+                          style: GoogleFonts.fredoka(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            decoration: isFound ? TextDecoration.lineThrough : null,
+                            decorationThickness: 2.5,
+                            decorationColor: Colors.green.shade700,
+                            color: isFound ? Colors.black45 : Colors.black87,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),

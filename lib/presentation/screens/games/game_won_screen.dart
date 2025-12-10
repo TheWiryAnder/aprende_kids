@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../widgets/game_video_widget.dart';
+import '../../../domain/services/user_stats_service.dart';
 
 /// Pantalla de victoria unificada para todos los juegos
-class GameWonScreen extends StatelessWidget {
+class GameWonScreen extends StatefulWidget {
   final String gameTitle;
   final int score;
   final int totalQuestions;
@@ -30,9 +32,48 @@ class GameWonScreen extends StatelessWidget {
     this.accentColor = const Color(0xFF9575CD),
   });
 
+  @override
+  State<GameWonScreen> createState() => _GameWonScreenState();
+}
+
+class _GameWonScreenState extends State<GameWonScreen> {
+  final UserStatsService _userStatsService = UserStatsService();
+  bool _statsUpdated = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateUserStats();
+  }
+
+  /// Actualiza las estadísticas del usuario en Firebase
+  Future<void> _updateUserStats() async {
+    if (_statsUpdated) return; // Prevenir actualizaciones duplicadas
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      print('⚠️ Usuario no autenticado, no se pueden actualizar estadísticas');
+      return;
+    }
+
+    try {
+      await _userStatsService.updateUserStatsAfterGame(
+        userId: user.uid,
+        coinsEarned: widget.coins,
+        scoreEarned: widget.score,
+      );
+
+      setState(() {
+        _statsUpdated = true;
+      });
+    } catch (e) {
+      print('❌ Error al actualizar estadísticas: $e');
+    }
+  }
+
   /// Calcula el número de estrellas según el porcentaje de aciertos
   int get stars {
-    final accuracy = (correctAnswers / totalQuestions) * 100;
+    final accuracy = (widget.correctAnswers / widget.totalQuestions) * 100;
     if (accuracy == 100) return 3;
     if (accuracy >= 70) return 2;
     if (accuracy >= 40) return 1;
@@ -55,7 +96,7 @@ class GameWonScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accuracy = ((correctAnswers / totalQuestions) * 100).round();
+    final accuracy = ((widget.correctAnswers / widget.totalQuestions) * 100).round();
     final isMobile = MediaQuery.of(context).size.width < 800;
 
     return PopScope(
@@ -66,7 +107,7 @@ class GameWonScreen extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [primaryColor, accentColor],
+              colors: [widget.primaryColor, widget.accentColor],
             ),
           ),
           child: SafeArea(
@@ -82,22 +123,23 @@ class GameWonScreen extends StatelessWidget {
     return Builder(
       builder: (context) => Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // GIF de celebración
+              // GIF de celebración MÁS GRANDE
               const GameVideoWidget(
                 videoType: GameVideoType.excelente,
-                width: 200,
-                height: 200,
+                width: 320,
+                height: 320,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
               // Tarjeta de resultados
-              _buildResultsCard(accuracy),
+              _buildResultsCard(accuracy, isMobile: true),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
               // Botones
               _buildActionButtons(context),
@@ -119,43 +161,44 @@ class GameWonScreen extends StatelessWidget {
           alignment: Alignment.center, // Centrado crítico
           child: FittedBox(
             fit: BoxFit.scaleDown, // Solo reduce si no cabe, no estira
+            alignment: Alignment.center, // Centrado explícito
             child: SizedBox(
-              width: 1100, // Reducido de 1200 para mejor ajuste
-              height: 650,  // Reducido de 700 para mejor proporción
+              width: 1200, // Incrementado para más espacio
+              height: 750,  // Incrementado para mejor proporción vertical
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // COLUMNA IZQUIERDA (35%): Avatar de Celebración
-                  const Expanded(
-                    flex: 35,
+                  // COLUMNA IZQUIERDA (40%): Avatar de Celebración - EXTRA GRANDE
+                  Expanded(
+                    flex: 40,
                     child: Center(
                       child: Padding(
-                        padding: EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(24),
                         child: GameVideoWidget(
                           videoType: GameVideoType.excelente,
-                          width: 320,
-                          height: 320,
+                          width: 450,
+                          height: 450,
                         ),
                       ),
                     ),
                   ),
 
-                  // COLUMNA DERECHA (65%): Tarjeta de Resultados
+                  // COLUMNA DERECHA (60%): Tarjeta de Resultados + Botones
                   Expanded(
-                    flex: 65,
+                    flex: 60,
                     child: Center(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
                         child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 550),
+                          constraints: const BoxConstraints(maxWidth: 600),
                           child: SingleChildScrollView(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                _buildResultsCard(accuracy),
-                                const SizedBox(height: 20),
+                                _buildResultsCard(accuracy, isMobile: false),
+                                const SizedBox(height: 28),
                                 _buildActionButtons(context),
                               ],
                             ),
@@ -174,12 +217,12 @@ class GameWonScreen extends StatelessWidget {
   }
 
   /// Tarjeta blanca con todos los resultados
-  Widget _buildResultsCard(int accuracy) {
+  Widget _buildResultsCard(int accuracy, {bool isMobile = false}) {
     return Container(
-      padding: const EdgeInsets.all(24), // Reducido de 32
+      padding: EdgeInsets.all(isMobile ? 18 : 22),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20), // Reducido de 24
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.15),
@@ -194,46 +237,46 @@ class GameWonScreen extends StatelessWidget {
           Text(
             '¡Juego Completado!',
             style: GoogleFonts.fredoka(
-              fontSize: 26, // Reducido de 32
+              fontSize: isMobile ? 24 : 26,
               fontWeight: FontWeight.bold,
-              color: primaryColor,
+              color: widget.primaryColor,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
 
           // Subtítulo (nombre del juego)
           Text(
-            gameTitle,
+            widget.gameTitle,
             style: GoogleFonts.fredoka(
-              fontSize: 16, // Reducido de 20
+              fontSize: isMobile ? 15 : 16,
               color: Colors.grey.shade700,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16), // Reducido de 24
+          const SizedBox(height: 14),
 
           // Mensaje motivacional
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 20, // Reducido de 24
-              vertical: 10,   // Reducido de 12
+            padding: EdgeInsets.symmetric(
+              horizontal: isMobile ? 16 : 18,
+              vertical: isMobile ? 8 : 9,
             ),
             decoration: BoxDecoration(
               color: Colors.amber.shade50,
-              borderRadius: BorderRadius.circular(12), // Reducido de 16
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
               motivationalMessage,
               style: GoogleFonts.fredoka(
-                fontSize: 16, // Reducido de 20
+                fontSize: isMobile ? 15 : 16,
                 fontWeight: FontWeight.bold,
                 color: Colors.amber.shade900,
               ),
               textAlign: TextAlign.center,
             ),
           ),
-          const SizedBox(height: 16), // Reducido de 24
+          SizedBox(height: isMobile ? 14 : 16),
 
           // Estrellas
           Row(
@@ -241,10 +284,10 @@ class GameWonScreen extends StatelessWidget {
             children: List.generate(
               3,
               (index) => Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6), // Reducido de 8
+                padding: EdgeInsets.symmetric(horizontal: isMobile ? 5 : 6),
                 child: Icon(
                   index < stars ? Icons.star : Icons.star_border,
-                  size: 48, // Reducido de 64
+                  size: isMobile ? 44 : 48,
                   color: index < stars
                       ? Colors.amber.shade600
                       : Colors.grey.shade300,
@@ -252,7 +295,7 @@ class GameWonScreen extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 20), // Reducido de 32
+          SizedBox(height: isMobile ? 16 : 18),
 
           // Puntuación grande
           Column(
@@ -260,30 +303,30 @@ class GameWonScreen extends StatelessWidget {
               Text(
                 'Puntuación',
                 style: GoogleFonts.fredoka(
-                  fontSize: 14, // Reducido de 18
+                  fontSize: isMobile ? 13 : 14,
                   color: Colors.grey.shade600,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
-                score.toString(),
+                widget.score.toString(),
                 style: GoogleFonts.fredoka(
-                  fontSize: 48, // Reducido de 64
+                  fontSize: isMobile ? 44 : 48,
                   fontWeight: FontWeight.bold,
-                  color: primaryColor,
+                  color: widget.primaryColor,
                   height: 1.0,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16), // Reducido de 24
+          SizedBox(height: isMobile ? 14 : 16),
 
           // Monedas ganadas (Botón amarillo)
           Container(
-            padding: const EdgeInsets.all(14), // Reducido de 20
+            padding: EdgeInsets.all(isMobile ? 12 : 13),
             decoration: BoxDecoration(
               color: Colors.amber.shade100,
-              borderRadius: BorderRadius.circular(12), // Reducido de 16
+              borderRadius: BorderRadius.circular(10),
               border: Border.all(
                 color: Colors.amber.shade400,
                 width: 2,
@@ -292,23 +335,23 @@ class GameWonScreen extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('💰', style: TextStyle(fontSize: 28)), // Reducido de 36
-                const SizedBox(width: 10), // Reducido de 12
+                Text('💰', style: TextStyle(fontSize: isMobile ? 26 : 28)),
+                SizedBox(width: isMobile ? 8 : 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '+$coins monedas',
+                      '+${widget.coins} monedas',
                       style: GoogleFonts.fredoka(
-                        fontSize: 20, // Reducido de 26
+                        fontSize: isMobile ? 18 : 20,
                         fontWeight: FontWeight.bold,
                         color: Colors.amber.shade900,
                       ),
                     ),
                     Text(
-                      'Tiempo: ${_formatTime(timeRemaining)}',
+                      'Tiempo: ${_formatTime(widget.timeRemaining)}',
                       style: GoogleFonts.fredoka(
-                        fontSize: 12, // Reducido de 14
+                        fontSize: isMobile ? 11 : 12,
                         color: Colors.grey.shade700,
                       ),
                     ),
@@ -317,7 +360,7 @@ class GameWonScreen extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 20), // Reducido de 32
+          SizedBox(height: isMobile ? 16 : 18),
 
           // Estadísticas (Preguntas/Aciertos/Precisión)
           Row(
@@ -326,13 +369,13 @@ class GameWonScreen extends StatelessWidget {
               _buildStat(
                 icon: Icons.quiz,
                 label: 'Preguntas',
-                value: totalQuestions.toString(),
+                value: widget.totalQuestions.toString(),
                 color: Colors.blue,
               ),
               _buildStat(
                 icon: Icons.check_circle,
                 label: 'Correctas',
-                value: correctAnswers.toString(),
+                value: widget.correctAnswers.toString(),
                 color: Colors.green,
               ),
               _buildStat(
@@ -345,20 +388,20 @@ class GameWonScreen extends StatelessWidget {
           ),
 
           // Mensaje de guardado
-          const SizedBox(height: 16), // Reducido de 24
+          SizedBox(height: isMobile ? 14 : 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 Icons.check_circle,
                 color: Colors.green.shade600,
-                size: 16, // Reducido de 20
+                size: isMobile ? 15 : 16,
               ),
-              const SizedBox(width: 6),
+              SizedBox(width: isMobile ? 5 : 6),
               Text(
                 '¡Puntuación guardada!',
                 style: GoogleFonts.fredoka(
-                  fontSize: 13, // Reducido de 16
+                  fontSize: isMobile ? 12 : 13,
                   fontWeight: FontWeight.w600,
                   color: Colors.green.shade700,
                 ),
@@ -372,8 +415,10 @@ class GameWonScreen extends StatelessWidget {
 
   /// Botones de acción (Ranking, Jugar de Nuevo, Inicio)
   Widget _buildActionButtons(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 800;
+
     return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 500),
+      constraints: BoxConstraints(maxWidth: isMobile ? 450 : 550),
       child: Column(
         children: [
           // Botón Ver Ranking
@@ -384,62 +429,62 @@ class GameWonScreen extends StatelessWidget {
                 // TODO: Implementar navegación a ranking
                 // ScaffoldMessenger no disponible aquí, ignorar por ahora
               },
-              icon: const Icon(Icons.leaderboard, size: 24),
+              icon: Icon(Icons.leaderboard, size: isMobile ? 20 : 22),
               label: Text(
                 'Ver Ranking',
                 style: GoogleFonts.fredoka(
-                  fontSize: 18,
+                  fontSize: isMobile ? 16 : 17,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
-                foregroundColor: primaryColor,
-                padding: const EdgeInsets.symmetric(
-                  vertical: 16,
-                  horizontal: 24,
+                foregroundColor: widget.primaryColor,
+                padding: EdgeInsets.symmetric(
+                  vertical: isMobile ? 14 : 15,
+                  horizontal: isMobile ? 20 : 24,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                elevation: 4,
+                elevation: 3,
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: isMobile ? 12 : 14),
 
           // Botón Jugar de Nuevo
-          if (onPlayAgain != null)
+          if (widget.onPlayAgain != null)
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
                   Navigator.pop(context);
-                  onPlayAgain!();
+                  widget.onPlayAgain!();
                 },
-                icon: const Icon(Icons.refresh, size: 24),
+                icon: Icon(Icons.refresh, size: isMobile ? 20 : 22),
                 label: Text(
                   'Jugar de Nuevo',
                   style: GoogleFonts.fredoka(
-                    fontSize: 18,
+                    fontSize: isMobile ? 16 : 17,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green.shade600,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 16,
-                    horizontal: 24,
+                  padding: EdgeInsets.symmetric(
+                    vertical: isMobile ? 14 : 15,
+                    horizontal: isMobile ? 20 : 24,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                  elevation: 4,
+                  elevation: 3,
                 ),
               ),
             ),
-          const SizedBox(height: 16),
+          SizedBox(height: isMobile ? 12 : 14),
 
           // Botón Volver al Inicio
           SizedBox(
@@ -450,11 +495,11 @@ class GameWonScreen extends StatelessWidget {
                 Navigator.pop(context);
                 context.pop();
               },
-              icon: const Icon(Icons.home, size: 24),
+              icon: Icon(Icons.home, size: isMobile ? 20 : 22),
               label: Text(
                 'Volver al Inicio',
                 style: GoogleFonts.fredoka(
-                  fontSize: 18,
+                  fontSize: isMobile ? 16 : 17,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -464,12 +509,12 @@ class GameWonScreen extends StatelessWidget {
                   color: Colors.white,
                   width: 2,
                 ),
-                padding: const EdgeInsets.symmetric(
-                  vertical: 16,
-                  horizontal: 24,
+                padding: EdgeInsets.symmetric(
+                  vertical: isMobile ? 14 : 15,
+                  horizontal: isMobile ? 20 : 24,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
                 ),
               ),
             ),

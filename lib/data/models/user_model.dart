@@ -18,6 +18,9 @@ class UserModel extends Equatable {
   final DateTime dateCreated;
   final String? parentEmail;
   final UserSettings settings;
+  final int coins;
+  final int totalScore;
+  final int gamesPlayed;
 
   const UserModel({
     required this.userId,
@@ -28,6 +31,9 @@ class UserModel extends Equatable {
     required this.dateCreated,
     this.parentEmail,
     required this.settings,
+    this.coins = 0,
+    this.totalScore = 0,
+    this.gamesPlayed = 0,
   });
 
   /// Crear desde JSON (Firestore)
@@ -41,6 +47,9 @@ class UserModel extends Equatable {
       dateCreated: (json['dateCreated'] as Timestamp).toDate(),
       parentEmail: json['parentEmail'] as String?,
       settings: UserSettings.fromJson(json['settings'] as Map<String, dynamic>),
+      coins: json['coins'] as int? ?? 0,
+      totalScore: json['totalScore'] as int? ?? 0,
+      gamesPlayed: json['gamesPlayed'] as int? ?? 0,
     );
   }
 
@@ -55,6 +64,9 @@ class UserModel extends Equatable {
       'dateCreated': Timestamp.fromDate(dateCreated),
       'parentEmail': parentEmail,
       'settings': settings.toJson(),
+      'coins': coins,
+      'totalScore': totalScore,
+      'gamesPlayed': gamesPlayed,
     };
   }
 
@@ -68,6 +80,9 @@ class UserModel extends Equatable {
     DateTime? dateCreated,
     String? parentEmail,
     UserSettings? settings,
+    int? coins,
+    int? totalScore,
+    int? gamesPlayed,
   }) {
     return UserModel(
       userId: userId ?? this.userId,
@@ -78,6 +93,9 @@ class UserModel extends Equatable {
       dateCreated: dateCreated ?? this.dateCreated,
       parentEmail: parentEmail ?? this.parentEmail,
       settings: settings ?? this.settings,
+      coins: coins ?? this.coins,
+      totalScore: totalScore ?? this.totalScore,
+      gamesPlayed: gamesPlayed ?? this.gamesPlayed,
     );
   }
 
@@ -91,6 +109,9 @@ class UserModel extends Equatable {
         dateCreated,
         parentEmail,
         settings,
+        coins,
+        totalScore,
+        gamesPlayed,
       ];
 }
 
