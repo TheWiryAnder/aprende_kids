@@ -83,7 +83,9 @@ class _GameSelectionScreenState extends State<GameSelectionScreen> {
                       // Grid de juegos
                       Expanded(
                         child: SingleChildScrollView(
-                          padding: const EdgeInsets.only(left: 8, right: 24, top: 24, bottom: 24),
+                          // ✅ COLCHÓN DE SCROLL: bottom: 200 para que el tutorial
+                          // pueda mostrar el globo completo en juegos inferiores
+                          padding: const EdgeInsets.only(left: 8, right: 24, top: 24, bottom: 200),
                           child: Center(
                             child: ConstrainedBox(
                               constraints: const BoxConstraints(maxWidth: 1000),

@@ -438,6 +438,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               key: _gamesZoneKey,
                               child: _buildGamesZoneSection(context),
                             ),
+
+                            // ✅ COLCHÓN DE SCROLL: Espacio extra para que el tutorial
+                            // pueda mostrar el globo completo en elementos inferiores
+                            const SizedBox(height: 250),
                           ],
                         ),
                       ),
