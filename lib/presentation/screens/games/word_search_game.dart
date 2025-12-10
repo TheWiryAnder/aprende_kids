@@ -117,9 +117,19 @@ class _WordSearchGameState extends State<WordSearchGame> {
     setState(() {
       // Generar con palabras aleatorias del banco maestro (sin pasar palabras)
       _wordSearch = generator.generate(widget.level);
+
+      // CORRECCIÓN: Limpiar TODOS los estados de selección y palabras encontradas
       _selectedCells.clear();
       _foundWords.clear();
       _wordColors.clear();
+      _selectedCellIndices.clear();  // ← Limpia las celdas azules temporales
+      _foundCellIndices.clear();      // ← Limpia las celdas verdes permanentes
+
+      // Resetear variables de selección
+      _selectionStartRow = null;
+      _selectionStartCol = null;
+      _selectionDirection = null;
+      _isSelecting = false;
 
       // Asignar colores a cada palabra
       for (var i = 0; i < _wordSearch.words.length; i++) {
@@ -944,19 +954,21 @@ class _WordSearchGameState extends State<WordSearchGame> {
                       ),
                       const SizedBox(width: 6),
                       Expanded(
-                        child: Text(
-                          word,
-                          style: GoogleFonts.fredoka(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            decoration: isFound ? TextDecoration.lineThrough : null,
-                            decorationThickness: 2.5,
-                            decorationColor: Colors.green.shade700,
-                            color: isFound ? Colors.black45 : Colors.black87,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown, // Reduce el tamaño si es necesario para que quepa
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            word,
+                            style: GoogleFonts.fredoka(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              decoration: isFound ? TextDecoration.lineThrough : null,
+                              decorationThickness: 2.5,
+                              decorationColor: Colors.green.shade700,
+                              color: isFound ? Colors.black45 : Colors.black87,
+                            ),
+                            maxLines: 1,
                           ),
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
                         ),
                       ),
                     ],
