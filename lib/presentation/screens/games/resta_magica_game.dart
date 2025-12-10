@@ -493,38 +493,55 @@ class _RestaMagicaGameState extends State<RestaMagicaGame> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth <= 600;
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+    if (isMobile) {
+      // Vista móvil: Grid 2x2 con emojis + número
+      return Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        alignment: WrapAlignment.center,
         children: _currentProblem!.options.map((option) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6),
+          return SizedBox(
+            width: (screenWidth - 48) / 2, // 2 columnas con spacing
             child: Material(
               color: _getOptionColor(option),
-              borderRadius: BorderRadius.circular(isMobile ? 12 : 16),
+              borderRadius: BorderRadius.circular(12),
               child: InkWell(
                 onTap: _showFeedback ? null : () => _checkAnswer(option),
-                borderRadius: BorderRadius.circular(isMobile ? 12 : 16),
+                borderRadius: BorderRadius.circular(12),
                 child: Container(
-                  width: isMobile ? 70 : 100,
-                  padding: EdgeInsets.symmetric(vertical: isMobile ? 12 : 20, horizontal: 8),
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
                   decoration: BoxDecoration(
                     border: Border.all(
                       color: _getOptionBorderColor(option),
-                      width: isMobile ? 2 : 3,
+                      width: 2,
                     ),
-                    borderRadius: BorderRadius.circular(isMobile ? 12 : 16),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      // Mostrar emojis en móvil
+                      Wrap(
+                        spacing: 2,
+                        runSpacing: 2,
+                        alignment: WrapAlignment.center,
+                        children: List.generate(
+                          option.clamp(0, 8), // Máximo 8 emojis para que quepa
+                          (index) => Text(
+                            _currentProblem!.visualType.emoji,
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      // Número grande
                       Text(
                         '$option',
+                        textAlign: TextAlign.center,
                         style: GoogleFonts.fredoka(
-                          fontSize: isMobile ? 20 : 28,
+                          fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.mathColor,
+                          color: const Color(0xFF1a1a2e),
                         ),
                       ),
                     ],
@@ -534,8 +551,49 @@ class _RestaMagicaGameState extends State<RestaMagicaGame> {
             ),
           );
         }).toList(),
-      ),
-    );
+      );
+    } else {
+      // Vista desktop: horizontal con scroll (mantener original)
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: _currentProblem!.options.map((option) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: Material(
+                color: _getOptionColor(option),
+                borderRadius: BorderRadius.circular(16),
+                child: InkWell(
+                  onTap: _showFeedback ? null : () => _checkAnswer(option),
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    width: 100,
+                    padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: _getOptionBorderColor(option),
+                        width: 3,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Text(
+                      '$option',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.fredoka(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF1a1a2e),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      );
+    }
   }
 
   Widget _buildFeedback() {
