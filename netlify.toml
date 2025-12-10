@@ -1,0 +1,49 @@
+# Configuración de Netlify para Flutter Web
+# APRENDE_KIDS - Plataforma Educativa
+
+[build]
+  # Directorio donde está el build de producción
+  publish = "build/web"
+
+  # Comando de build (por si se quiere CI/CD automático)
+  command = "flutter build web --release"
+
+# Redirecciones para SPA (Single Page Application)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Headers de seguridad y rendimiento
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Seguridad
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+    # Cache para assets estáticos
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    # No cachear index.html
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Content-Type = "application/javascript; charset=utf-8"
+
+[[headers]]
+  for = "/*.wasm"
+  [headers.values]
+    Content-Type = "application/wasm"
+
+# Configuración para Firebase (si se usa)
+[[headers]]
+  for = "/__/*"
+  [headers.values]
+    Cache-Control = "no-cache"

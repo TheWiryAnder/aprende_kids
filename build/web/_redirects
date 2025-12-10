@@ -1,0 +1,4 @@
+# Netlify redirects for Flutter Web SPA
+# Todas las rutas deben redirigir a index.html para que Flutter Router funcione
+
+/*    /index.html   200
