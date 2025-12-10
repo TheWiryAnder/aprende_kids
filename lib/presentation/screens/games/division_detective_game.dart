@@ -15,11 +15,11 @@ library;
 /// Fecha: 2025
 
 import 'dart:async';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../app/theme/colors.dart';
+import '../../../data/math_data_bank.dart';
 import '../../widgets/game_video_widget.dart';
 
 class DivisionDetectiveGame extends StatefulWidget {
@@ -30,23 +30,13 @@ class DivisionDetectiveGame extends StatefulWidget {
 }
 
 class _DivisionDetectiveGameState extends State<DivisionDetectiveGame> {
-  final Random _random = Random();
-
   int _currentScore = 0;
   int _questionsAnswered = 0;
   int _correctAnswers = 0;
   int _consecutiveCorrect = 0;
 
-  int _dividend = 0; // Dividendo (número total)
-  int _divisor = 0; // Divisor (grupos)
-  int _correctAnswer = 0; // Resultado
-  List<int> _options = [];
-  String _currentEmoji = '🔍';
-
-  final List<String> _emojis = [
-    '🔍', '🕵️', '🔎', '📍', '🎯', '💎', '💰', '🏆',
-    '🎁', '📦', '🧩', '🎲', '🃏', '🎴'
-  ];
+  // ✅ GENERACIÓN PROCEDURAL: Problema actual generado dinámicamente
+  MathProblem? _currentProblem;
 
   Timer? _gameTimer;
   int _timeRemaining = 60;
@@ -82,45 +72,28 @@ class _DivisionDetectiveGameState extends State<DivisionDetectiveGame> {
 
   void _generateNewProblem() {
     setState(() {
-      // Generar divisiones exactas (sin residuo)
-      int maxDivisor = 3 + (_correctAnswers ~/ 3).clamp(0, 7); // Hasta 10
+      // ✅ GENERACIÓN PROCEDURAL: Determinar nivel de dificultad dinámicamente
+      int level = 1;
+      if (_correctAnswers >= 8) {
+        level = 3;
+      } else if (_correctAnswers >= 3) {
+        level = 2;
+      }
 
-      _divisor = _random.nextInt(maxDivisor) + 2; // De 2 a maxDivisor
-      _correctAnswer = _random.nextInt(6) + 2; // Resultado de 2 a 7
-
-      _dividend = _divisor * _correctAnswer; // Asegurar división exacta
-
-      _currentEmoji = _emojis[_random.nextInt(_emojis.length)];
-      _options = _generateOptions(_correctAnswer);
-      _options.shuffle();
+      // ✅ GENERACIÓN PROCEDURAL: Usar MathDataBank para divisiones
+      _currentProblem = MathDataBank.generateDivision(level: level);
 
       _showFeedback = false;
       _selectedAnswer = null;
     });
   }
 
-  List<int> _generateOptions(int correct) {
-    List<int> options = [correct];
-
-    while (options.length < 4) {
-      int offset = _random.nextInt(5) - 2;
-      if (offset == 0) offset = _random.nextBool() ? 3 : -3;
-
-      int wrongAnswer = correct + offset;
-      if (wrongAnswer > 0 && wrongAnswer <= 20 && !options.contains(wrongAnswer)) {
-        options.add(wrongAnswer);
-      }
-    }
-
-    return options;
-  }
-
   void _checkAnswer(int selectedAnswer) {
-    if (_showFeedback) return;
+    if (_showFeedback || _currentProblem == null) return;
 
     setState(() {
       _selectedAnswer = selectedAnswer;
-      _isCorrect = selectedAnswer == _correctAnswer;
+      _isCorrect = selectedAnswer == _currentProblem!.correctAnswer;
       _showFeedback = true;
       _questionsAnswered++;
 
@@ -169,22 +142,22 @@ class _DivisionDetectiveGameState extends State<DivisionDetectiveGame> {
   }
 
   Color _getOptionColor(int option) {
-    if (!_showFeedback) return Colors.white;
+    if (!_showFeedback || _currentProblem == null) return Colors.white;
     if (option == _selectedAnswer) {
       return _isCorrect ? Colors.green.shade100 : Colors.red.shade100;
     }
-    if (option == _correctAnswer && !_isCorrect) {
+    if (option == _currentProblem!.correctAnswer && !_isCorrect) {
       return Colors.green.shade100;
     }
     return Colors.white;
   }
 
   Color _getOptionBorderColor(int option) {
-    if (!_showFeedback) return AppColors.mathColor;
+    if (!_showFeedback || _currentProblem == null) return AppColors.mathColor;
     if (option == _selectedAnswer) {
       return _isCorrect ? Colors.green : Colors.red;
     }
-    if (option == _correctAnswer && !_isCorrect) {
+    if (option == _currentProblem!.correctAnswer && !_isCorrect) {
       return Colors.green;
     }
     return AppColors.mathColor.withValues(alpha: 0.3);
@@ -416,10 +389,12 @@ class _DivisionDetectiveGameState extends State<DivisionDetectiveGame> {
   }
 
   Widget _buildProblem() {
+    if (_currentProblem == null) return const SizedBox.shrink();
+
     return Column(
       children: [
         Text(
-          '¿Cuántos en cada grupo?',
+          _currentProblem!.questionText,
           style: GoogleFonts.fredoka(
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -428,7 +403,7 @@ class _DivisionDetectiveGameState extends State<DivisionDetectiveGame> {
         ),
         const SizedBox(height: 8),
         Text(
-          '$_dividend ÷ $_divisor',
+          '${_currentProblem!.operand1} ÷ ${_currentProblem!.operand2}',
           style: GoogleFonts.fredoka(
             fontSize: 28,
             fontWeight: FontWeight.bold,
@@ -437,7 +412,7 @@ class _DivisionDetectiveGameState extends State<DivisionDetectiveGame> {
         ),
         const SizedBox(height: 16),
         Text(
-          'Distribuye $_dividend objetos en $_divisor grupos',
+          'Distribuye ${_currentProblem!.operand1} objetos en ${_currentProblem!.operand2} grupos',
           style: GoogleFonts.fredoka(
             fontSize: 14,
             color: Colors.grey.shade600,
@@ -461,9 +436,9 @@ class _DivisionDetectiveGameState extends State<DivisionDetectiveGame> {
             runSpacing: 6,
             alignment: WrapAlignment.center,
             children: List.generate(
-              _dividend.clamp(0, 30), // Limitar para no saturar
+              _currentProblem!.operand1.clamp(0, 30), // Limitar para no saturar
               (index) => Text(
-                _currentEmoji,
+                _currentProblem!.visualType.emoji,
                 style: const TextStyle(fontSize: 24),
               ),
             ),
@@ -479,7 +454,7 @@ class _DivisionDetectiveGameState extends State<DivisionDetectiveGame> {
 
         // Mostrar grupos vacíos
         Text(
-          'Dividir en $_divisor grupos iguales:',
+          'Dividir en ${_currentProblem!.operand2} grupos iguales:',
           style: GoogleFonts.fredoka(
             fontSize: 14,
             fontWeight: FontWeight.w600,
@@ -492,7 +467,7 @@ class _DivisionDetectiveGameState extends State<DivisionDetectiveGame> {
           spacing: 8,
           runSpacing: 8,
           alignment: WrapAlignment.center,
-          children: List.generate(_divisor, (index) {
+          children: List.generate(_currentProblem!.operand2, (index) {
             return Container(
               width: 80,
               height: 60,
@@ -523,11 +498,13 @@ class _DivisionDetectiveGameState extends State<DivisionDetectiveGame> {
   }
 
   Widget _buildOptions() {
+    if (_currentProblem == null) return const SizedBox.shrink();
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: _options.map((option) {
+        children: _currentProblem!.options.map((option) {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 6),
             child: Material(
@@ -578,6 +555,8 @@ class _DivisionDetectiveGameState extends State<DivisionDetectiveGame> {
   }
 
   Widget _buildFeedback() {
+    if (_currentProblem == null) return const SizedBox.shrink();
+
     return TweenAnimationBuilder(
       duration: const Duration(milliseconds: 300),
       tween: Tween<double>(begin: 0, end: 1),
@@ -607,7 +586,7 @@ class _DivisionDetectiveGameState extends State<DivisionDetectiveGame> {
                   child: Text(
                     _isCorrect
                         ? '¡Caso resuelto! +${20 + (_timeRemaining / 10).floor() * 4 + ((_consecutiveCorrect > 1) ? (_consecutiveCorrect - 1) * 8 : 0)} puntos'
-                        : '¡Error! Eran $_correctAnswer por grupo (-10 puntos)',
+                        : '¡Error! Eran ${_currentProblem!.correctAnswer} por grupo (-10 puntos)',
                     style: GoogleFonts.fredoka(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,

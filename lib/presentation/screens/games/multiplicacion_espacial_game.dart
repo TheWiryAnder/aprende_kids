@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../app/theme/colors.dart';
+import '../../../data/math_data_bank.dart';
 import '../../widgets/game_video_widget.dart';
 
 class MultiplicacionEspacialGame extends StatefulWidget {
@@ -30,23 +31,13 @@ class MultiplicacionEspacialGame extends StatefulWidget {
 }
 
 class _MultiplicacionEspacialGameState extends State<MultiplicacionEspacialGame> {
-  final Random _random = Random();
-
   int _currentScore = 0;
   int _questionsAnswered = 0;
   int _correctAnswers = 0;
   int _consecutiveCorrect = 0;
 
-  int _num1 = 0; // Número de grupos
-  int _num2 = 0; // Objetos por grupo
-  int _correctAnswer = 0;
-  List<int> _options = [];
-  String _currentEmoji = '🚀';
-
-  final List<String> _emojis = [
-    '🚀', '🛸', '🌟', '⭐', '💫', '🌙', '🪐', '🌍',
-    '👽', '🛰️', '☄️', '🌠', '🔭', '🧑‍🚀'
-  ];
+  // ✅ GENERACIÓN PROCEDURAL: Problema actual generado dinámicamente
+  MathProblem? _currentProblem;
 
   Timer? _gameTimer;
   int _timeRemaining = 60;
@@ -82,45 +73,28 @@ class _MultiplicacionEspacialGameState extends State<MultiplicacionEspacialGame>
 
   void _generateNewProblem() {
     setState(() {
-      // Empezar con tablas fáciles (2-5) y aumentar gradualmente
-      int maxTable = 2 + (_correctAnswers ~/ 2).clamp(0, 8); // Hasta tabla del 10
+      // ✅ GENERACIÓN PROCEDURAL: Determinar nivel de dificultad dinámicamente
+      int level = 1;
+      if (_correctAnswers >= 8) {
+        level = 3;
+      } else if (_correctAnswers >= 3) {
+        level = 2;
+      }
 
-      _num1 = _random.nextInt(maxTable) + 2; // De 2 a maxTable
-      _num2 = _random.nextInt(5) + 2; // De 2 a 6
-
-      _correctAnswer = _num1 * _num2;
-
-      _currentEmoji = _emojis[_random.nextInt(_emojis.length)];
-      _options = _generateOptions(_correctAnswer);
-      _options.shuffle();
+      // ✅ GENERACIÓN PROCEDURAL: Usar MathDataBank con variación de assets
+      _currentProblem = MathDataBank.generateMultiplication(level: level);
 
       _showFeedback = false;
       _selectedAnswer = null;
     });
   }
 
-  List<int> _generateOptions(int correct) {
-    List<int> options = [correct];
-
-    while (options.length < 4) {
-      int offset = _random.nextInt(7) - 3;
-      if (offset == 0) offset = _random.nextBool() ? 4 : -4;
-
-      int wrongAnswer = correct + offset;
-      if (wrongAnswer > 0 && !options.contains(wrongAnswer)) {
-        options.add(wrongAnswer);
-      }
-    }
-
-    return options;
-  }
-
   void _checkAnswer(int selectedAnswer) {
-    if (_showFeedback) return;
+    if (_showFeedback || _currentProblem == null) return;
 
     setState(() {
       _selectedAnswer = selectedAnswer;
-      _isCorrect = selectedAnswer == _correctAnswer;
+      _isCorrect = selectedAnswer == _currentProblem!.correctAnswer;
       _showFeedback = true;
       _questionsAnswered++;
 
@@ -169,22 +143,22 @@ class _MultiplicacionEspacialGameState extends State<MultiplicacionEspacialGame>
   }
 
   Color _getOptionColor(int option) {
-    if (!_showFeedback) return Colors.white;
+    if (!_showFeedback || _currentProblem == null) return Colors.white;
     if (option == _selectedAnswer) {
       return _isCorrect ? Colors.green.shade100 : Colors.red.shade100;
     }
-    if (option == _correctAnswer && !_isCorrect) {
+    if (option == _currentProblem!.correctAnswer && !_isCorrect) {
       return Colors.green.shade100;
     }
     return Colors.white;
   }
 
   Color _getOptionBorderColor(int option) {
-    if (!_showFeedback) return AppColors.mathColor;
+    if (!_showFeedback || _currentProblem == null) return AppColors.mathColor;
     if (option == _selectedAnswer) {
       return _isCorrect ? Colors.green : Colors.red;
     }
-    if (option == _correctAnswer && !_isCorrect) {
+    if (option == _currentProblem!.correctAnswer && !_isCorrect) {
       return Colors.green;
     }
     return AppColors.mathColor.withValues(alpha: 0.3);
@@ -416,10 +390,12 @@ class _MultiplicacionEspacialGameState extends State<MultiplicacionEspacialGame>
   }
 
   Widget _buildProblem() {
+    if (_currentProblem == null) return const SizedBox.shrink();
+
     return Column(
       children: [
         Text(
-          '¿Cuántos hay en total?',
+          _currentProblem!.questionText,
           style: GoogleFonts.fredoka(
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -428,7 +404,7 @@ class _MultiplicacionEspacialGameState extends State<MultiplicacionEspacialGame>
         ),
         const SizedBox(height: 8),
         Text(
-          '$_num1 grupos × $_num2',
+          '${_currentProblem!.operand1} grupos × ${_currentProblem!.operand2}',
           style: GoogleFonts.fredoka(
             fontSize: 16,
             color: Colors.grey.shade600,
@@ -441,7 +417,7 @@ class _MultiplicacionEspacialGameState extends State<MultiplicacionEspacialGame>
           spacing: 12,
           runSpacing: 12,
           alignment: WrapAlignment.center,
-          children: List.generate(_num1, (groupIndex) {
+          children: List.generate(_currentProblem!.operand1, (groupIndex) {
             return Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
@@ -455,9 +431,9 @@ class _MultiplicacionEspacialGameState extends State<MultiplicacionEspacialGame>
               child: Wrap(
                 spacing: 4,
                 runSpacing: 4,
-                children: List.generate(_num2, (itemIndex) {
+                children: List.generate(_currentProblem!.operand2, (itemIndex) {
                   return Text(
-                    _currentEmoji,
+                    _currentProblem!.visualType.emoji,
                     style: const TextStyle(fontSize: 24),
                   );
                 }),
@@ -470,11 +446,13 @@ class _MultiplicacionEspacialGameState extends State<MultiplicacionEspacialGame>
   }
 
   Widget _buildOptions() {
+    if (_currentProblem == null) return const SizedBox.shrink();
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: _options.map((option) {
+        children: _currentProblem!.options.map((option) {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 6),
             child: Material(
@@ -512,6 +490,8 @@ class _MultiplicacionEspacialGameState extends State<MultiplicacionEspacialGame>
   }
 
   Widget _buildFeedback() {
+    if (_currentProblem == null) return const SizedBox.shrink();
+
     return TweenAnimationBuilder(
       duration: const Duration(milliseconds: 300),
       tween: Tween<double>(begin: 0, end: 1),
@@ -541,7 +521,7 @@ class _MultiplicacionEspacialGameState extends State<MultiplicacionEspacialGame>
                   child: Text(
                     _isCorrect
                         ? '¡Excelente! +${15 + (_timeRemaining / 10).floor() * 3 + ((_consecutiveCorrect > 1) ? (_consecutiveCorrect - 1) * 7 : 0)} puntos'
-                        : '¡Ops! Era $_correctAnswer (-7 puntos)',
+                        : '¡Ops! Era ${_currentProblem!.correctAnswer} (-7 puntos)',
                     style: GoogleFonts.fredoka(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
