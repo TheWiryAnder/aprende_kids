@@ -175,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
         enableOverlayTab: true,
         contents: [
           TargetContent(
-            align: ContentAlign.bottom,
+            align: ContentAlign.top, // ✅ CAMBIADO: top para que se vea el texto completo
             builder: (context, controller) {
               return _buildTutorialContent(
                 title: 'Tus Materias 📚',
