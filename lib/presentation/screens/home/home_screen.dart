@@ -472,7 +472,7 @@ class _HomeScreenState extends State<HomeScreen> {
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 1, // ✅ 1 columna en móvil
-          childAspectRatio: 2.5, // ✅ Rectángulo horizontal cómodo
+          childAspectRatio: 3.5, // ✅ Tarjeta horizontal ancha y baja
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
         ),
@@ -518,6 +518,8 @@ class _HomeScreenState extends State<HomeScreen> {
     required IconData icon,
     required Color color,
   }) {
+    final isMobile = context.isMobile;
+
     return GestureDetector(
       onTap: () {
         if (id == 'word_search') {
@@ -527,10 +529,10 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       },
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(isMobile ? 12 : 20),
         decoration: BoxDecoration(
           color: color,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(isMobile ? 16 : 20),
           boxShadow: [
             BoxShadow(
               color: color.withValues(alpha: 0.3),
@@ -539,42 +541,90 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.3),
-                shape: BoxShape.circle,
+        child: isMobile
+            ? Row(
+                children: [
+                  // Icono en móvil
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      icon,
+                      size: 32,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Texto en móvil
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: GoogleFonts.fredoka(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          description,
+                          style: GoogleFonts.fredoka(
+                            fontSize: 12,
+                            color: Colors.white.withValues(alpha: 0.9),
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              )
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      icon,
+                      size: 48,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.fredoka(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    description,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.fredoka(
+                      fontSize: 14,
+                      color: Colors.white.withValues(alpha: 0.9),
+                    ),
+                  ),
+                ],
               ),
-              child: Icon(
-                icon,
-                size: 48,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.fredoka(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              description,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.fredoka(
-                fontSize: 14,
-                color: Colors.white.withValues(alpha: 0.9),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -941,7 +991,7 @@ class _HomeScreenState extends State<HomeScreen> {
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 1, // ✅ 1 columna en móvil para ocupar todo el ancho
-          childAspectRatio: 2.5, // ✅ Rectángulo horizontal cómodo
+          childAspectRatio: 3.5, // ✅ Tarjeta horizontal ancha y baja
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
         ),
@@ -991,12 +1041,14 @@ class _HomeScreenState extends State<HomeScreen> {
     required IconData icon,
     required List<Color> gradient,
   }) {
+    final isMobile = context.isMobile;
+
     return GestureDetector(
       onTap: () {
         context.push('/games/$id');
       },
       child: Container(
-        height: context.responsive(
+        height: isMobile ? null : context.responsive(
           mobile: 220.0,
           tablet: 250.0,
           desktop: 280.0,
@@ -1007,7 +1059,7 @@ class _HomeScreenState extends State<HomeScreen> {
             end: Alignment.bottomRight,
             colors: gradient,
           ),
-          borderRadius: BorderRadius.circular(32),
+          borderRadius: BorderRadius.circular(isMobile ? 16 : 32),
           boxShadow: [
             BoxShadow(
               color: gradient[0].withValues(alpha: 0.4),
@@ -1018,68 +1070,119 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: Padding(
           padding: EdgeInsets.all(
-            context.responsive(mobile: 16.0, tablet: 20.0, desktop: 24.0),
+            context.responsive(mobile: 12.0, tablet: 20.0, desktop: 24.0),
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Icono grande responsive
-              Container(
-                width: context.responsive(mobile: 60.0, tablet: 80.0, desktop: 100.0),
-                height: context.responsive(mobile: 60.0, tablet: 80.0, desktop: 100.0),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.25),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  icon,
-                  size: context.responsive(mobile: 32.0, tablet: 44.0, desktop: 56.0),
-                  color: Colors.white,
-                ),
-              ),
-              SizedBox(height: context.responsive(mobile: 12.0, tablet: 16.0, desktop: 20.0)),
+          child: isMobile
+              ? Row(
+                  children: [
+                    // Icono en móvil
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.25),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        icon,
+                        size: 28,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Texto en móvil
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: GoogleFonts.fredoka(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              height: 1.1,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            description,
+                            style: GoogleFonts.fredoka(
+                              fontSize: 12,
+                              color: Colors.white.withValues(alpha: 0.9),
+                              height: 1.2,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                )
+              : Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Icono grande responsive
+                    Container(
+                      width: context.responsive(mobile: 60.0, tablet: 80.0, desktop: 100.0),
+                      height: context.responsive(mobile: 60.0, tablet: 80.0, desktop: 100.0),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.25),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        icon,
+                        size: context.responsive(mobile: 32.0, tablet: 44.0, desktop: 56.0),
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: context.responsive(mobile: 12.0, tablet: 16.0, desktop: 20.0)),
 
-              // Título grande responsive
-              Text(
-                title,
-                style: GoogleFonts.fredoka(
-                  fontSize: getResponsiveFontSize(
-                    context,
-                    mobile: 18.0,
-                    tablet: 21.0,
-                    desktop: 24.0,
-                  ),
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 0.5,
-                  height: 1.1,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              SizedBox(height: context.responsive(mobile: 6.0, tablet: 7.0, desktop: 8.0)),
+                    // Título grande responsive
+                    Text(
+                      title,
+                      style: GoogleFonts.fredoka(
+                        fontSize: getResponsiveFontSize(
+                          context,
+                          mobile: 18.0,
+                          tablet: 21.0,
+                          desktop: 24.0,
+                        ),
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 0.5,
+                        height: 1.1,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: context.responsive(mobile: 6.0, tablet: 7.0, desktop: 8.0)),
 
-              // Descripción responsive
-              Text(
-                description,
-                style: GoogleFonts.fredoka(
-                  fontSize: getResponsiveFontSize(
-                    context,
-                    mobile: 12.0,
-                    tablet: 13.5,
-                    desktop: 15.0,
-                  ),
-                  color: Colors.white.withValues(alpha: 0.95),
-                  height: 1.2,
+                    // Descripción responsive
+                    Text(
+                      description,
+                      style: GoogleFonts.fredoka(
+                        fontSize: getResponsiveFontSize(
+                          context,
+                          mobile: 12.0,
+                          tablet: 13.5,
+                          desktop: 15.0,
+                        ),
+                        color: Colors.white.withValues(alpha: 0.95),
+                        height: 1.2,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
         ),
       ),
     );
