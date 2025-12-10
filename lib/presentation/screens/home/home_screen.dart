@@ -182,7 +182,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 description: 'Aquí tienes tus materias favoritas: Matemáticas, Lenguaje, Ciencias y más. ¡Toca una para empezar!',
                 icon: Icons.school,
                 color: Colors.green,
-                onNext: controller.next,
+                onNext: () async {
+                  // ✅ SCROLL AUTOMÁTICO: Antes de pasar al paso 4, hacer scroll
+                  await _scrollToTarget(_gamesZoneKey);
+                  controller.next();
+                },
                 onSkip: controller.skip,
                 showSkip: true,
               );
