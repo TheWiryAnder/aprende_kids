@@ -168,48 +168,51 @@ class _MultiplicacionEspacialGameState extends State<MultiplicacionEspacialGame>
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final showVideo = screenWidth > 600; // Mostrar en tablet y desktop
+    final isMobile = screenWidth <= 600;
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF1a1a2e),
-              Color(0xFF16213e),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(),
-              Expanded(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Video en la izquierda (tablet y desktop)
-                    if (showVideo)
-                      Container(
-                        width: 450,
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          children: [
-                            Expanded(
-                              child: LayoutBuilder(
-                                builder: (context, constraints) {
-                                  return GameVideoWidget(
-                                    videoType: _getCurrentVideoType(),
-                                    width: 400,
-                                    height: constraints.maxHeight,
-                                  );
-                                },
-                              ),
+      body: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF1a1a2e),
+                  Color(0xFF16213e),
+                ],
+              ),
+            ),
+            child: SafeArea(
+              child: Column(
+                children: [
+                  _buildHeader(),
+                  Expanded(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Video en la izquierda (tablet y desktop)
+                        if (showVideo)
+                          Container(
+                            width: 450,
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              children: [
+                                Expanded(
+                                  child: LayoutBuilder(
+                                    builder: (context, constraints) {
+                                      return GameVideoWidget(
+                                        videoType: _getCurrentVideoType(),
+                                        width: 400,
+                                        height: constraints.maxHeight,
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
+                          ),
                     // Contenido del juego
                     Expanded(
                       child: Center(
