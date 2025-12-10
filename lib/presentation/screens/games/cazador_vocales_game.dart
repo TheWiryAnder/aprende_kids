@@ -26,23 +26,31 @@ class CazadorVocalesGame extends StatefulWidget {
 class _CazadorVocalesGameState extends State<CazadorVocalesGame> {
   final Random _random = Random();
 
-  // Palabras con sus vocales
+  // ✅ CORRECCIÓN: Lista definitiva de vocales (incluye acentuadas)
+  static const List<String> _vowels = [
+    'a', 'e', 'i', 'o', 'u',
+    'á', 'é', 'í', 'ó', 'ú', 'ü',
+    'A', 'E', 'I', 'O', 'U',
+    'Á', 'É', 'Í', 'Ó', 'Ú', 'Ü',
+  ];
+
+  // Palabras simplificadas (sin índices hardcodeados)
   final List<Map<String, dynamic>> _words = [
-    {'word': 'CASA', 'emoji': '🏠', 'vowels': [1, 3]},
-    {'word': 'PERRO', 'emoji': '🐕', 'vowels': [1, 4]},
-    {'word': 'GATO', 'emoji': '🐱', 'vowels': [1, 3]},
-    {'word': 'ARBOL', 'emoji': '🌳', 'vowels': [0, 4]},
-    {'word': 'ELEFANTE', 'emoji': '🐘', 'vowels': [0, 2, 5, 7]},
-    {'word': 'OSO', 'emoji': '🐻', 'vowels': [0, 2]},
-    {'word': 'LUNA', 'emoji': '🌙', 'vowels': [1, 3]},
-    {'word': 'ESTRELLA', 'emoji': '⭐', 'vowels': [0, 3, 7]},
-    {'word': 'FLOR', 'emoji': '🌸', 'vowels': [2]},
-    {'word': 'MARIPOSA', 'emoji': '🦋', 'vowels': [1, 3, 5, 7]},
-    {'word': 'AVION', 'emoji': '✈️', 'vowels': [0, 2, 4]},
-    {'word': 'BARCO', 'emoji': '⛵', 'vowels': [1, 4]},
-    {'word': 'OCEANO', 'emoji': '🌊', 'vowels': [0, 2, 4]},
-    {'word': 'TORTUGA', 'emoji': '🐢', 'vowels': [1, 4, 6]},
-    {'word': 'CONEJO', 'emoji': '🐰', 'vowels': [1, 3, 5]},
+    {'word': 'CASA', 'emoji': '🏠'},
+    {'word': 'PERRO', 'emoji': '🐕'},
+    {'word': 'GATO', 'emoji': '🐱'},
+    {'word': 'ÁRBOL', 'emoji': '🌳'},
+    {'word': 'ELEFANTE', 'emoji': '🐘'},
+    {'word': 'OSO', 'emoji': '🐻'},
+    {'word': 'LUNA', 'emoji': '🌙'},
+    {'word': 'ESTRELLA', 'emoji': '⭐'},
+    {'word': 'FLOR', 'emoji': '🌸'},
+    {'word': 'MARIPOSA', 'emoji': '🦋'},
+    {'word': 'AVIÓN', 'emoji': '✈️'},
+    {'word': 'BARCO', 'emoji': '⛵'},
+    {'word': 'OCÉANO', 'emoji': '🌊'},
+    {'word': 'TORTUGA', 'emoji': '🐢'},
+    {'word': 'CONEJO', 'emoji': '🐰'},
   ];
 
   Map<String, dynamic> _currentWord = {};
@@ -92,12 +100,28 @@ class _CazadorVocalesGameState extends State<CazadorVocalesGame> {
 
   void _generateProblem() {
     final wordData = _words[_random.nextInt(_words.length)];
+    final word = wordData['word'] as String;
+
+    // ✅ CORRECCIÓN: Calcular dinámicamente los índices de las vocales
+    final vowelIndices = <int>{};
+    for (int i = 0; i < word.length; i++) {
+      if (_isVowel(word[i])) {
+        vowelIndices.add(i);
+      }
+    }
+
     setState(() {
       _currentWord = wordData;
       _selectedIndices.clear();
-      _correctIndices = Set.from(wordData['vowels'] as List<int>);
+      _correctIndices = vowelIndices;
       _showFeedback = false;
     });
+  }
+
+  /// ✅ CORRECCIÓN: Método robusto para validar vocales
+  /// Normaliza el carácter y verifica si está en la lista de vocales
+  bool _isVowel(String letter) {
+    return _vowels.contains(letter);
   }
 
   void _toggleLetter(int index) {
