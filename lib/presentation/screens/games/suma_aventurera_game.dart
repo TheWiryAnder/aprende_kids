@@ -21,6 +21,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../app/theme/colors.dart';
 import '../../widgets/game_video_widget.dart';
+import '../../../data/math_data_bank.dart';
 
 class SumaAventureraGame extends StatefulWidget {
   const SumaAventureraGame({super.key});
@@ -30,39 +31,14 @@ class SumaAventureraGame extends StatefulWidget {
 }
 
 class _SumaAventureraGameState extends State<SumaAventureraGame> {
-  final Random _random = Random();
-
   // Estado del juego
   int _currentScore = 0;
   int _questionsAnswered = 0;
   int _correctAnswers = 0;
   int _consecutiveCorrect = 0;
 
-  // Problema actual
-  int _num1 = 0;
-  int _num2 = 0;
-  int _correctAnswer = 0;
-  List<int> _options = [];
-  String _currentEmoji = '🍎'; // Emoji actual del problema
-
-  // Lista de emojis de frutas y objetos
-  final List<String> _emojis = [
-    '🍎', // Manzana
-    '🍊', // Naranja
-    '🍌', // Plátano
-    '🍓', // Fresa
-    '🍇', // Uvas
-    '🍉', // Sandía
-    '🍒', // Cerezas
-    '🍑', // Durazno
-    '⭐', // Estrella
-    '🌟', // Estrella brillante
-    '💎', // Diamante
-    '🎈', // Globo
-    '🎁', // Regalo
-    '🧸', // Osito
-    '⚽', // Pelota
-  ];
+  // ✅ GENERACIÓN PROCEDURAL: Problema actual generado dinámicamente
+  MathProblem? _currentProblem;
 
   // Control de tiempo
   Timer? _gameTimer;
@@ -100,28 +76,19 @@ class _SumaAventureraGameState extends State<SumaAventureraGame> {
 
   void _generateNewProblem() {
     setState(() {
-      // Generar números para suma (apropiado para 6-8 años)
-      // Aumentar dificultad gradualmente según respuestas correctas
-      int maxNum = 5 + (_correctAnswers ~/ 3).clamp(0, 10); // Máximo 15
-
-      // Limitar números para que la suma no pase de 10 al inicio
-      _num1 = _random.nextInt(maxNum) + 1;
-      _num2 = _random.nextInt(maxNum) + 1;
-
-      // Si la suma es muy grande al inicio, ajustar
-      if (_correctAnswers < 5 && _num1 + _num2 > 10) {
-        _num1 = _random.nextInt(5) + 1;
-        _num2 = _random.nextInt(5) + 1;
+      // ✅ GENERACIÓN PROCEDURAL: Determinar nivel de dificultad dinámicamente
+      // Nivel 1 (fácil): 0-2 respuestas correctas -> números 1-5
+      // Nivel 2 (medio): 3-7 respuestas correctas -> números 1-10
+      // Nivel 3 (difícil): 8+ respuestas correctas -> números 1-20
+      int level = 1;
+      if (_correctAnswers >= 8) {
+        level = 3;
+      } else if (_correctAnswers >= 3) {
+        level = 2;
       }
 
-      _correctAnswer = _num1 + _num2;
-
-      // Seleccionar un emoji aleatorio para este problema
-      _currentEmoji = _emojis[_random.nextInt(_emojis.length)];
-
-      // Generar opciones de respuesta
-      _options = _generateOptions(_correctAnswer);
-      _options.shuffle();
+      // ✅ GENERACIÓN PROCEDURAL: Usar MathDataBank con variación de assets
+      _currentProblem = MathDataBank.generateAddition(level: level);
 
       // Resetear feedback
       _showFeedback = false;
@@ -129,29 +96,12 @@ class _SumaAventureraGameState extends State<SumaAventureraGame> {
     });
   }
 
-  List<int> _generateOptions(int correct) {
-    List<int> options = [correct];
-
-    // Generar 3 opciones incorrectas cercanas
-    while (options.length < 4) {
-      int offset = _random.nextInt(5) - 2; // -2 a +2
-      if (offset == 0) offset = _random.nextBool() ? 3 : -3;
-
-      int wrongAnswer = correct + offset;
-      if (wrongAnswer > 0 && !options.contains(wrongAnswer)) {
-        options.add(wrongAnswer);
-      }
-    }
-
-    return options;
-  }
-
   void _checkAnswer(int selectedAnswer) {
-    if (_showFeedback) return; // Evitar doble click
+    if (_showFeedback || _currentProblem == null) return; // Evitar doble click
 
     setState(() {
       _selectedAnswer = selectedAnswer;
-      _isCorrect = selectedAnswer == _correctAnswer;
+      _isCorrect = selectedAnswer == _currentProblem!.correctAnswer;
       _showFeedback = true;
       _questionsAnswered++;
 
@@ -205,7 +155,7 @@ class _SumaAventureraGameState extends State<SumaAventureraGame> {
   }
 
   Color _getOptionColor(int option) {
-    if (!_showFeedback) {
+    if (!_showFeedback || _currentProblem == null) {
       return Colors.white;
     }
 
@@ -213,7 +163,7 @@ class _SumaAventureraGameState extends State<SumaAventureraGame> {
       return _isCorrect ? Colors.green.shade100 : Colors.red.shade100;
     }
 
-    if (option == _correctAnswer && !_isCorrect) {
+    if (option == _currentProblem!.correctAnswer && !_isCorrect) {
       return Colors.green.shade100;
     }
 
@@ -221,7 +171,7 @@ class _SumaAventureraGameState extends State<SumaAventureraGame> {
   }
 
   Color _getOptionBorderColor(int option) {
-    if (!_showFeedback) {
+    if (!_showFeedback || _currentProblem == null) {
       return AppColors.mathColor;
     }
 
@@ -229,7 +179,7 @@ class _SumaAventureraGameState extends State<SumaAventureraGame> {
       return _isCorrect ? Colors.green : Colors.red;
     }
 
-    if (option == _correctAnswer && !_isCorrect) {
+    if (option == _currentProblem!.correctAnswer && !_isCorrect) {
       return Colors.green;
     }
 
@@ -502,7 +452,7 @@ class _SumaAventureraGameState extends State<SumaAventureraGame> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // Primer grupo de figuras
-            _buildEmojiGroup(_num1),
+            _buildEmojiGroup(_currentProblem?.operand1 ?? 0, _currentProblem?.visualType.emoji ?? '🍎'),
 
             const SizedBox(width: 20),
 
@@ -526,7 +476,7 @@ class _SumaAventureraGameState extends State<SumaAventureraGame> {
             const SizedBox(width: 20),
 
             // Segundo grupo de figuras
-            _buildEmojiGroup(_num2),
+            _buildEmojiGroup(_currentProblem?.operand2 ?? 0, _currentProblem?.visualType.emoji ?? '🍎'),
           ],
         ),
       ],
@@ -534,7 +484,7 @@ class _SumaAventureraGameState extends State<SumaAventureraGame> {
   }
 
   // Widget para mostrar un grupo de emojis
-  Widget _buildEmojiGroup(int count) {
+  Widget _buildEmojiGroup(int count, String emoji) {
     return Container(
       constraints: const BoxConstraints(maxWidth: 180),
       padding: const EdgeInsets.all(12),
@@ -553,7 +503,7 @@ class _SumaAventureraGameState extends State<SumaAventureraGame> {
         children: List.generate(
           count,
           (index) => Text(
-            _currentEmoji,
+            emoji, // ✅ Usar emoji dinámico del MathDataBank
             style: const TextStyle(fontSize: 32),
           ),
         ),
@@ -562,11 +512,13 @@ class _SumaAventureraGameState extends State<SumaAventureraGame> {
   }
 
   Widget _buildOptions() {
+    if (_currentProblem == null) return const SizedBox.shrink();
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: _options.map((option) {
+        children: _currentProblem!.options.map((option) {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 6),
             child: Material(
@@ -596,7 +548,7 @@ class _SumaAventureraGameState extends State<SumaAventureraGame> {
                         children: List.generate(
                           option.clamp(0, 15), // Limitar a máximo 15 para evitar overflow
                           (index) => Text(
-                            _currentEmoji,
+                            _currentProblem!.visualType.emoji, // ✅ Usar emoji dinámico
                             style: const TextStyle(fontSize: 20),
                           ),
                         ),

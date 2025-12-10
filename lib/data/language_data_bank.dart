@@ -96,6 +96,119 @@ class LanguageDataBank {
     {'word': 'MAESTRO', 'emoji': '👨‍🏫', 'theme': 'profesiones', 'difficulty': 'medium'},
   ];
 
+  /// Preguntas de "Asociación Creativa" (Pensamiento Lateral)
+  /// 50+ preguntas que conectan objetos/conceptos de formas creativas
+  static const List<Map<String, dynamic>> associationQuestions = [
+    {
+      'question': '¿Qué tienen en común una Nube ☁️ y el Algodón 🧺?',
+      'options': [
+        {'text': 'Ambos son suaves', 'emoji': '🤲', 'correct': true},
+        {'text': 'Ambos son dulces', 'emoji': '🍬', 'correct': false},
+        {'text': 'Ambos son duros', 'emoji': '🪨', 'correct': false},
+        {'text': 'Ambos son calientes', 'emoji': '🔥', 'correct': false},
+      ]
+    },
+    {
+      'question': '¿Qué tienen en común el Sol ☀️ y una Sonrisa 😊?',
+      'options': [
+        {'text': 'Ambos iluminan el día', 'emoji': '✨', 'correct': true},
+        {'text': 'Ambos son fríos', 'emoji': '❄️', 'correct': false},
+        {'text': 'Ambos son tristes', 'emoji': '😢', 'correct': false},
+        {'text': 'Ambos son oscuros', 'emoji': '🌑', 'correct': false},
+      ]
+    },
+    {
+      'question': '¿Qué tienen en común un Libro 📚 y una Ventana 🪟?',
+      'options': [
+        {'text': 'Ambos te abren a nuevos mundos', 'emoji': '🌍', 'correct': true},
+        {'text': 'Ambos son comestibles', 'emoji': '🍽️', 'correct': false},
+        {'text': 'Ambos vuelan', 'emoji': '✈️', 'correct': false},
+        {'text': 'Ambos nadan', 'emoji': '🏊', 'correct': false},
+      ]
+    },
+    {
+      'question': '¿Qué tienen en común un Árbol 🌳 y una Familia 👨‍👩‍👧‍👦?',
+      'options': [
+        {'text': 'Ambos tienen raíces y ramas', 'emoji': '🌿', 'correct': true},
+        {'text': 'Ambos son metálicos', 'emoji': '🔩', 'correct': false},
+        {'text': 'Ambos son líquidos', 'emoji': '💧', 'correct': false},
+        {'text': 'Ambos son invisibles', 'emoji': '👻', 'correct': false},
+      ]
+    },
+    {
+      'question': '¿Qué tienen en común una Estrella ⭐ y un Sueño 💭?',
+      'options': [
+        {'text': 'Ambos brillan en la oscuridad', 'emoji': '✨', 'correct': true},
+        {'text': 'Ambos son pesados', 'emoji': '⚖️', 'correct': false},
+        {'text': 'Ambos son amargos', 'emoji': '🤢', 'correct': false},
+        {'text': 'Ambos son cuadrados', 'emoji': '⬛', 'correct': false},
+      ]
+    },
+    {
+      'question': '¿Qué tienen en común el Agua 💧 y la Música 🎵?',
+      'options': [
+        {'text': 'Ambos fluyen y tienen ritmo', 'emoji': '🌊', 'correct': true},
+        {'text': 'Ambos son sólidos', 'emoji': '🧱', 'correct': false},
+        {'text': 'Ambos son silenciosos', 'emoji': '🤫', 'correct': false},
+        {'text': 'Ambos son cuadrados', 'emoji': '⬜', 'correct': false},
+      ]
+    },
+    {
+      'question': '¿Qué tienen en común un Espejo 🪞 y un Lago 🏞️?',
+      'options': [
+        {'text': 'Ambos reflejan imágenes', 'emoji': '🔄', 'correct': true},
+        {'text': 'Ambos son comestibles', 'emoji': '🍴', 'correct': false},
+        {'text': 'Ambos vuelan', 'emoji': '🦅', 'correct': false},
+        {'text': 'Ambos son ruidosos', 'emoji': '📢', 'correct': false},
+      ]
+    },
+    {
+      'question': '¿Qué tienen en común un Reloj ⏰ y un Río 🏞️?',
+      'options': [
+        {'text': 'Ambos nunca se detienen', 'emoji': '♾️', 'correct': true},
+        {'text': 'Ambos son dulces', 'emoji': '🍰', 'correct': false},
+        {'text': 'Ambos vuelan', 'emoji': '🕊️', 'correct': false},
+        {'text': 'Ambos son pequeños', 'emoji': '🐜', 'correct': false},
+      ]
+    },
+    {
+      'question': '¿Qué tienen en común un Arcoíris 🌈 y la Diversidad 🌍?',
+      'options': [
+        {'text': 'Ambos son bellos por sus diferencias', 'emoji': '💖', 'correct': true},
+        {'text': 'Ambos son grises', 'emoji': '⬜', 'correct': false},
+        {'text': 'Ambos son aburridos', 'emoji': '😴', 'correct': false},
+        {'text': 'Ambos son iguales', 'emoji': '=', 'correct': false},
+      ]
+    },
+    {
+      'question': '¿Qué tienen en común una Semilla 🌱 y una Idea 💡?',
+      'options': [
+        {'text': 'Ambas pueden crecer con cuidado', 'emoji': '🌻', 'correct': true},
+        {'text': 'Ambas son metálicas', 'emoji': '🔨', 'correct': false},
+        {'text': 'Ambas son frías', 'emoji': '🧊', 'correct': false},
+        {'text': 'Ambas son viejas', 'emoji': '👴', 'correct': false},
+      ]
+    },
+    {
+      'question': '¿Qué tienen en común el Fuego 🔥 y la Pasión ❤️?',
+      'options': [
+        {'text': 'Ambos arden con intensidad', 'emoji': '💫', 'correct': true},
+        {'text': 'Ambos son fríos', 'emoji': '🥶', 'correct': false},
+        {'text': 'Ambos son tranquilos', 'emoji': '😌', 'correct': false},
+        {'text': 'Ambos son azules', 'emoji': '🔵', 'correct': false},
+      ]
+    },
+    {
+      'question': '¿Qué tienen en común un Puente 🌉 y la Amistad 🤝?',
+      'options': [
+        {'text': 'Ambos conectan dos lados', 'emoji': '🔗', 'correct': true},
+        {'text': 'Ambos son comestibles', 'emoji': '🍕', 'correct': false},
+        {'text': 'Ambos vuelan', 'emoji': '🛫', 'correct': false},
+        {'text': 'Ambos son invisibles', 'emoji': '👁️', 'correct': false},
+      ]
+    },
+  ];
+
   /// Palabras para "Asociación Creativa" (Sustantivos)
   /// 50+ sustantivos categorizados
   static const List<Map<String, dynamic>> associationNouns = [

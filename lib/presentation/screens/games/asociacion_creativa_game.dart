@@ -14,6 +14,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../widgets/game_video_widget.dart';
+import '../../../domain/services/shuffle_bag_service.dart';
+import '../../../data/language_data_bank.dart';
 
 class AsociacionCreativaGame extends StatefulWidget {
   const AsociacionCreativaGame({super.key});
@@ -25,117 +27,8 @@ class AsociacionCreativaGame extends StatefulWidget {
 class _AsociacionCreativaGameState extends State<AsociacionCreativaGame> {
   final Random _random = Random();
 
-  // Preguntas de asociación creativa
-  final List<Map<String, dynamic>> _questions = [
-    {
-      'question': '¿Qué tienen en común una Nube ☁️ y el Algodón 🧺?',
-      'options': [
-        {'text': 'Ambos son suaves', 'emoji': '🤲', 'correct': true},
-        {'text': 'Ambos son dulces', 'emoji': '🍬', 'correct': false},
-        {'text': 'Ambos son duros', 'emoji': '🪨', 'correct': false},
-        {'text': 'Ambos son calientes', 'emoji': '🔥', 'correct': false},
-      ]
-    },
-    {
-      'question': '¿Qué tienen en común el Sol ☀️ y una Sonrisa 😊?',
-      'options': [
-        {'text': 'Ambos iluminan el día', 'emoji': '✨', 'correct': true},
-        {'text': 'Ambos son fríos', 'emoji': '❄️', 'correct': false},
-        {'text': 'Ambos son tristes', 'emoji': '😢', 'correct': false},
-        {'text': 'Ambos son oscuros', 'emoji': '🌑', 'correct': false},
-      ]
-    },
-    {
-      'question': '¿Qué tienen en común un Libro 📚 y una Ventana 🪟?',
-      'options': [
-        {'text': 'Ambos te abren a nuevos mundos', 'emoji': '🌍', 'correct': true},
-        {'text': 'Ambos son comestibles', 'emoji': '🍽️', 'correct': false},
-        {'text': 'Ambos vuelan', 'emoji': '✈️', 'correct': false},
-        {'text': 'Ambos nadan', 'emoji': '🏊', 'correct': false},
-      ]
-    },
-    {
-      'question': '¿Qué tienen en común un Árbol 🌳 y una Familia 👨‍👩‍👧‍👦?',
-      'options': [
-        {'text': 'Ambos tienen raíces y ramas', 'emoji': '🌿', 'correct': true},
-        {'text': 'Ambos son metálicos', 'emoji': '🔩', 'correct': false},
-        {'text': 'Ambos son líquidos', 'emoji': '💧', 'correct': false},
-        {'text': 'Ambos son invisibles', 'emoji': '👻', 'correct': false},
-      ]
-    },
-    {
-      'question': '¿Qué tienen en común una Estrella ⭐ y un Sueño 💭?',
-      'options': [
-        {'text': 'Ambos brillan en la oscuridad', 'emoji': '✨', 'correct': true},
-        {'text': 'Ambos son pesados', 'emoji': '⚖️', 'correct': false},
-        {'text': 'Ambos son amargos', 'emoji': '🤢', 'correct': false},
-        {'text': 'Ambos son cuadrados', 'emoji': '⬛', 'correct': false},
-      ]
-    },
-    {
-      'question': '¿Qué tienen en común el Agua 💧 y la Música 🎵?',
-      'options': [
-        {'text': 'Ambos fluyen y tienen ritmo', 'emoji': '🌊', 'correct': true},
-        {'text': 'Ambos son sólidos', 'emoji': '🧱', 'correct': false},
-        {'text': 'Ambos son silenciosos', 'emoji': '🤫', 'correct': false},
-        {'text': 'Ambos son cuadrados', 'emoji': '⬜', 'correct': false},
-      ]
-    },
-    {
-      'question': '¿Qué tienen en común un Espejo 🪞 y un Lago 🏞️?',
-      'options': [
-        {'text': 'Ambos reflejan imágenes', 'emoji': '🔄', 'correct': true},
-        {'text': 'Ambos son comestibles', 'emoji': '🍴', 'correct': false},
-        {'text': 'Ambos vuelan', 'emoji': '🦅', 'correct': false},
-        {'text': 'Ambos son ruidosos', 'emoji': '📢', 'correct': false},
-      ]
-    },
-    {
-      'question': '¿Qué tienen en común un Reloj ⏰ y un Río 🏞️?',
-      'options': [
-        {'text': 'Ambos nunca se detienen', 'emoji': '♾️', 'correct': true},
-        {'text': 'Ambos son dulces', 'emoji': '🍰', 'correct': false},
-        {'text': 'Ambos vuelan', 'emoji': '🕊️', 'correct': false},
-        {'text': 'Ambos son pequeños', 'emoji': '🐜', 'correct': false},
-      ]
-    },
-    {
-      'question': '¿Qué tienen en común un Arcoíris 🌈 y la Diversidad 🌍?',
-      'options': [
-        {'text': 'Ambos son bellos por sus diferencias', 'emoji': '💖', 'correct': true},
-        {'text': 'Ambos son grises', 'emoji': '⬜', 'correct': false},
-        {'text': 'Ambos son aburridos', 'emoji': '😴', 'correct': false},
-        {'text': 'Ambos son iguales', 'emoji': '=', 'correct': false},
-      ]
-    },
-    {
-      'question': '¿Qué tienen en común una Semilla 🌱 y una Idea 💡?',
-      'options': [
-        {'text': 'Ambas pueden crecer con cuidado', 'emoji': '🌻', 'correct': true},
-        {'text': 'Ambas son metálicas', 'emoji': '🔨', 'correct': false},
-        {'text': 'Ambas son frías', 'emoji': '🧊', 'correct': false},
-        {'text': 'Ambas son viejas', 'emoji': '👴', 'correct': false},
-      ]
-    },
-    {
-      'question': '¿Qué tienen en común el Fuego 🔥 y la Pasión ❤️?',
-      'options': [
-        {'text': 'Ambos arden con intensidad', 'emoji': '💫', 'correct': true},
-        {'text': 'Ambos son fríos', 'emoji': '🥶', 'correct': false},
-        {'text': 'Ambos son tranquilos', 'emoji': '😌', 'correct': false},
-        {'text': 'Ambos son azules', 'emoji': '🔵', 'correct': false},
-      ]
-    },
-    {
-      'question': '¿Qué tienen en común un Puente 🌉 y la Amistad 🤝?',
-      'options': [
-        {'text': 'Ambos conectan dos lados', 'emoji': '🔗', 'correct': true},
-        {'text': 'Ambos son comestibles', 'emoji': '🍕', 'correct': false},
-        {'text': 'Ambos vuelan', 'emoji': '🛫', 'correct': false},
-        {'text': 'Ambos son invisibles', 'emoji': '👁️', 'correct': false},
-      ]
-    },
-  ];
+  // ✅ SHUFFLE BAG: Evita repetición de preguntas
+  late ShuffleBag<Map<String, dynamic>> _questionsBag;
 
   Map<String, dynamic> _currentQuestion = {};
   List<Map<String, dynamic>> _options = [];
@@ -158,6 +51,11 @@ class _AsociacionCreativaGameState extends State<AsociacionCreativaGame> {
   @override
   void initState() {
     super.initState();
+    // Inicializar ShuffleBag con banco de datos extenso (12+ preguntas)
+    _questionsBag = ShuffleBag<Map<String, dynamic>>(
+      storageKey: 'asociacion_creativa_questions',
+      items: LanguageDataBank.associationQuestions,
+    );
     _generateProblem();
     _startTimer();
   }
@@ -183,7 +81,8 @@ class _AsociacionCreativaGameState extends State<AsociacionCreativaGame> {
   }
 
   void _generateProblem() {
-    final question = _questions[_random.nextInt(_questions.length)];
+    // ✅ SHUFFLE BAG: Obtiene siguiente pregunta sin repetir
+    final question = _questionsBag.next();
     final options = List<Map<String, dynamic>>.from(question['options'] as List);
     options.shuffle(_random);
 
