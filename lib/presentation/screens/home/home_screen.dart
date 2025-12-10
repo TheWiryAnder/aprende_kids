@@ -68,18 +68,18 @@ class _HomeScreenState extends State<HomeScreen> {
   /// Hace scroll automático al elemento del tutorial
   /// Garantiza que el elemento esté visible antes de mostrar el globo
   Future<void> _scrollToTarget(GlobalKey key) async {
-    await Future<void>.delayed(const Duration(milliseconds: 300));
+    await Future<void>.delayed(const Duration(milliseconds: 400));
 
     if (key.currentContext != null) {
       await Scrollable.ensureVisible(
         key.currentContext!,
-        duration: const Duration(milliseconds: 500),
-        alignment: 0.5, // Centrar el elemento en la pantalla
+        duration: const Duration(milliseconds: 600),
+        alignment: 0.2, // ✅ AJUSTADO: 0.2 = sube MÁS el elemento (20% desde arriba)
         curve: Curves.easeInOut,
       );
 
-      // Esperar un poco más para que el scroll termine completamente
-      await Future<void>.delayed(const Duration(milliseconds: 200));
+      // Esperar más tiempo para que el scroll termine y el contenido se estabilice
+      await Future<void>.delayed(const Duration(milliseconds: 400));
     }
   }
 
@@ -441,7 +441,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
                             // ✅ COLCHÓN DE SCROLL: Espacio extra para que el tutorial
                             // pueda mostrar el globo completo en elementos inferiores
-                            const SizedBox(height: 250),
+                            // AUMENTADO a 400px para asegurar visibilidad total
+                            const SizedBox(height: 400),
                           ],
                         ),
                       ),
