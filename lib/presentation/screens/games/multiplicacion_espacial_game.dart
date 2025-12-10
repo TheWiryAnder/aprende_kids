@@ -213,49 +213,51 @@ class _MultiplicacionEspacialGameState extends State<MultiplicacionEspacialGame>
                               ],
                             ),
                           ),
-                    // Contenido del juego
-                    Expanded(
-                      child: Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 800),
-                          child: Container(
-                            margin: EdgeInsets.all(screenWidth > 600 ? 16 : 8),
-                            padding: EdgeInsets.all(screenWidth > 600 ? 24 : 12),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(screenWidth > 600 ? 20 : 12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.3),
-                                  blurRadius: 15,
-                                  offset: const Offset(0, 5),
+                        // Contenido del juego
+                        Expanded(
+                          child: Center(
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 800),
+                              child: Container(
+                                margin: EdgeInsets.all(screenWidth > 600 ? 16 : 8),
+                                padding: EdgeInsets.all(screenWidth > 600 ? 24 : 12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(screenWidth > 600 ? 20 : 12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.3),
+                                      blurRadius: 15,
+                                      offset: const Offset(0, 5),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (screenWidth > 600) _buildCharacter(),
-                                _buildProblem(),
-                                const SizedBox(height: 8),
-                                _buildOptions(),
-                                if (_showFeedback) ...[
-                                  const SizedBox(height: 8),
-                                  _buildFeedback(),
-                                ],
-                              ],
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (screenWidth > 600) _buildCharacter(),
+                                    _buildProblem(),
+                                    const SizedBox(height: 8),
+                                    _buildOptions(),
+                                    if (_showFeedback) ...[
+                                      const SizedBox(height: 8),
+                                      _buildFeedback(),
+                                    ],
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
