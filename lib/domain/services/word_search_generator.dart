@@ -1,9 +1,13 @@
 import 'dart:math';
 import '../models/word_search_model.dart';
+import 'shuffle_bag_service.dart';
 
 /// Generador de Sopas de Letras
 class WordSearchGenerator {
   final Random _random = Random();
+
+  // ✅ SHUFFLE BAG: Evita repetición de palabras entre partidas
+  static ShuffleBag<String>? _wordBag;
 
   /// Banco de palabras maestro - Palabras variadas por categorías
   static const Map<String, List<String>> wordBank = {
@@ -191,19 +195,29 @@ class WordSearchGenerator {
     return true;
   }
 
-  /// Selecciona palabras aleatorias del banco maestro
+  /// Selecciona palabras aleatorias del banco maestro usando ShuffleBag
+  /// para evitar repetición entre partidas
   List<String> _selectRandomWords(int count) {
-    // Combinar todas las categorías en una lista
-    final allWords = <String>[];
-    for (final category in wordBank.values) {
-      allWords.addAll(category);
+    // ✅ SHUFFLE BAG: Inicializar bolsa si no existe
+    if (_wordBag == null) {
+      // Combinar todas las categorías en una lista
+      final allWords = <String>[];
+      for (final category in wordBank.values) {
+        allWords.addAll(category);
+      }
+      _wordBag = ShuffleBag<String>(
+        storageKey: 'word_search_words',
+        items: allWords,
+      );
     }
 
-    // Mezclar la lista
-    allWords.shuffle(_random);
+    // ✅ SHUFFLE BAG: Obtener palabras sin repetir hasta agotar todas
+    final selectedWords = <String>[];
+    for (var i = 0; i < count && i < _wordBag!.totalItems; i++) {
+      selectedWords.add(_wordBag!.next());
+    }
 
-    // Seleccionar las primeras 'count' palabras (sin repetir)
-    return allWords.take(count).toList();
+    return selectedWords;
   }
 
   /// Rellena los espacios vacíos con letras aleatorias
