@@ -282,7 +282,7 @@ class MathDataBank {
     final seenProblems = <String>{};
 
     int attempts = 0;
-    const maxAttempts = count * 10;
+    final maxAttempts = count * 10;
 
     while (problems.length < count && attempts < maxAttempts) {
       attempts++;

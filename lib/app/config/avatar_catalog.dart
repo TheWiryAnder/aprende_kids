@@ -300,15 +300,134 @@ class AvatarCatalog {
     return fallback;
   }
 
-  static String fallbackForCategory(String category, {String orElse = ''}) {
+  static String fallbackForCategory(String category, {String orElse = '', String? gender}) {
     final parts = _partsByCategory[category];
     if (parts == null || parts.isEmpty) {
       return orElse;
     }
 
+    // ✅ CORRECCIÓN: Lógica específica de género para ropa
+    if (gender != null && (category == 'bottom' || category == 'top' || category == 'body' || category == 'face' || category == 'hair' || category == 'shoes')) {
+      final genderSpecificPart = _getGenderSpecificDefault(parts, category, gender);
+      if (genderSpecificPart != null) {
+        return genderSpecificPart.id;
+      }
+    }
+
     final defaultPart =
         parts.firstWhere((part) => part.isDefault, orElse: () => parts.first);
     return defaultPart.id;
+  }
+
+  /// ✅ CORRECCIÓN: Obtiene el asset por defecto según el género
+  static AvatarPartItem? _getGenderSpecificDefault(
+    List<AvatarPartItem> parts,
+    String category,
+    String gender,
+  ) {
+    final isMale = gender.toLowerCase() == 'male';
+
+    switch (category) {
+      case 'bottom':
+        // Niño: pantalon/short | Niña: falda
+        if (isMale) {
+          // Buscar pantalón o short (evitar falda)
+          return parts.firstWhere(
+            (p) => p.assetPath.toLowerCase().contains('pantalon') ||
+                   p.assetPath.toLowerCase().contains('short'),
+            orElse: () => parts.first,
+          );
+        } else {
+          // Buscar falda
+          return parts.firstWhere(
+            (p) => p.assetPath.toLowerCase().contains('falda'),
+            orElse: () => parts.first,
+          );
+        }
+
+      case 'top':
+        // Niño: polo | Niña: polo_niña
+        if (isMale) {
+          return parts.firstWhere(
+            (p) => p.assetPath.toLowerCase().contains('polo') &&
+                   !p.assetPath.toLowerCase().contains('niña'),
+            orElse: () => parts.first,
+          );
+        } else {
+          return parts.firstWhere(
+            (p) => p.assetPath.toLowerCase().contains('polo') &&
+                   p.assetPath.toLowerCase().contains('niña'),
+            orElse: () => parts.first,
+          );
+        }
+
+      case 'body':
+        // Niño: cuerpo | Niña: cuerpo_niña
+        if (isMale) {
+          return parts.firstWhere(
+            (p) => p.assetPath.toLowerCase().contains('cuerpo') &&
+                   !p.assetPath.toLowerCase().contains('niña'),
+            orElse: () => parts.first,
+          );
+        } else {
+          return parts.firstWhere(
+            (p) => p.assetPath.toLowerCase().contains('cuerpo') &&
+                   p.assetPath.toLowerCase().contains('niña'),
+            orElse: () => parts.first,
+          );
+        }
+
+      case 'face':
+        // Niño: rostro | Niña: rostro_niña
+        if (isMale) {
+          return parts.firstWhere(
+            (p) => p.assetPath.toLowerCase().contains('rostro') &&
+                   !p.assetPath.toLowerCase().contains('niña'),
+            orElse: () => parts.first,
+          );
+        } else {
+          return parts.firstWhere(
+            (p) => p.assetPath.toLowerCase().contains('rostro') &&
+                   p.assetPath.toLowerCase().contains('niña'),
+            orElse: () => parts.first,
+          );
+        }
+
+      case 'hair':
+        // Niño: cabello | Niña: cabello_niña
+        if (isMale) {
+          return parts.firstWhere(
+            (p) => p.assetPath.toLowerCase().contains('cabello') &&
+                   !p.assetPath.toLowerCase().contains('niña'),
+            orElse: () => parts.first,
+          );
+        } else {
+          return parts.firstWhere(
+            (p) => p.assetPath.toLowerCase().contains('cabello') &&
+                   p.assetPath.toLowerCase().contains('niña'),
+            orElse: () => parts.first,
+          );
+        }
+
+      case 'shoes':
+        // Niño: zapatos | Niña: zapatos_niña
+        if (isMale) {
+          return parts.firstWhere(
+            (p) => p.assetPath.toLowerCase().contains('zapatos') &&
+                   !p.assetPath.toLowerCase().contains('niña'),
+            orElse: () => parts.first,
+          );
+        } else {
+          return parts.firstWhere(
+            (p) => p.assetPath.toLowerCase().contains('zapatos') &&
+                   p.assetPath.toLowerCase().contains('niña'),
+            orElse: () => parts.first,
+          );
+        }
+
+      default:
+        return null;
+    }
   }
 
   static List<String> getDefaultUnlockedIds(String category) {

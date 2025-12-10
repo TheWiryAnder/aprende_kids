@@ -72,8 +72,9 @@ class AvatarModel {
 
   /// Crea un avatar básico para un nuevo usuario masculino
   factory AvatarModel.defaultMale(String userId) {
+    // ✅ CORRECCIÓN: Pasar género 'male' para obtener assets masculinos
     String _default(String category) {
-      return AvatarCatalog.fallbackForCategory(category);
+      return AvatarCatalog.fallbackForCategory(category, gender: 'male');
     }
 
     List<String> _defaults(String category) {
@@ -89,7 +90,7 @@ class AvatarModel {
       mouth: _default('mouth'),
       hair: _default('hair'),
       top: _default('top'),
-      bottom: _default('bottom'),
+      bottom: _default('bottom'), // ✅ Ahora asignará pantalon/short
       shoes: _default('shoes'),
       hands: _default('hands'),
       accessory: _default('accessory'),
@@ -110,8 +111,9 @@ class AvatarModel {
 
   /// Crea un avatar básico para un nuevo usuario femenino
   factory AvatarModel.defaultFemale(String userId) {
+    // ✅ CORRECCIÓN: Pasar género 'female' para obtener assets femeninos
     String _default(String category) {
-      return AvatarCatalog.fallbackForCategory(category);
+      return AvatarCatalog.fallbackForCategory(category, gender: 'female');
     }
 
     List<String> _defaults(String category) {
@@ -127,7 +129,7 @@ class AvatarModel {
       mouth: _default('mouth'),
       hair: _default('hair'),
       top: _default('top'),
-      bottom: _default('bottom'),
+      bottom: _default('bottom'), // ✅ Ahora asignará falda
       shoes: _default('shoes'),
       hands: _default('hands'),
       accessory: _default('accessory'),
