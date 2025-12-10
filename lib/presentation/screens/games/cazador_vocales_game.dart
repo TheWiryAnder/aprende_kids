@@ -13,7 +13,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../app/utils/responsive_utils.dart';
+import '../../../data/language_data_bank.dart';
+import '../../../domain/services/shuffle_bag_service.dart';
 import '../../widgets/game_video_widget.dart';
 
 class CazadorVocalesGame extends StatefulWidget {
@@ -24,7 +25,8 @@ class CazadorVocalesGame extends StatefulWidget {
 }
 
 class _CazadorVocalesGameState extends State<CazadorVocalesGame> {
-  final Random _random = Random();
+  // ✅ SHUFFLE BAG: Evita repetición de palabras
+  late ShuffleBag<Map<String, dynamic>> _wordsBag;
 
   // ✅ CORRECCIÓN: Lista definitiva de vocales (incluye acentuadas)
   static const List<String> _vowels = [
@@ -32,25 +34,6 @@ class _CazadorVocalesGameState extends State<CazadorVocalesGame> {
     'á', 'é', 'í', 'ó', 'ú', 'ü',
     'A', 'E', 'I', 'O', 'U',
     'Á', 'É', 'Í', 'Ó', 'Ú', 'Ü',
-  ];
-
-  // Palabras simplificadas (sin índices hardcodeados)
-  final List<Map<String, dynamic>> _words = [
-    {'word': 'CASA', 'emoji': '🏠'},
-    {'word': 'PERRO', 'emoji': '🐕'},
-    {'word': 'GATO', 'emoji': '🐱'},
-    {'word': 'ÁRBOL', 'emoji': '🌳'},
-    {'word': 'ELEFANTE', 'emoji': '🐘'},
-    {'word': 'OSO', 'emoji': '🐻'},
-    {'word': 'LUNA', 'emoji': '🌙'},
-    {'word': 'ESTRELLA', 'emoji': '⭐'},
-    {'word': 'FLOR', 'emoji': '🌸'},
-    {'word': 'MARIPOSA', 'emoji': '🦋'},
-    {'word': 'AVIÓN', 'emoji': '✈️'},
-    {'word': 'BARCO', 'emoji': '⛵'},
-    {'word': 'OCÉANO', 'emoji': '🌊'},
-    {'word': 'TORTUGA', 'emoji': '🐢'},
-    {'word': 'CONEJO', 'emoji': '🐰'},
   ];
 
   Map<String, dynamic> _currentWord = {};
@@ -74,6 +57,11 @@ class _CazadorVocalesGameState extends State<CazadorVocalesGame> {
   @override
   void initState() {
     super.initState();
+    // Inicializar ShuffleBag con banco de datos extenso (60+ palabras)
+    _wordsBag = ShuffleBag<Map<String, dynamic>>(
+      storageKey: 'cazador_vocales_words',
+      items: LanguageDataBank.vowelWords,
+    );
     _generateProblem();
     _startTimer();
   }
@@ -99,7 +87,8 @@ class _CazadorVocalesGameState extends State<CazadorVocalesGame> {
   }
 
   void _generateProblem() {
-    final wordData = _words[_random.nextInt(_words.length)];
+    // ✅ SHUFFLE BAG: Obtiene siguiente palabra sin repetir
+    final wordData = _wordsBag.next();
     final word = wordData['word'] as String;
 
     // ✅ CORRECCIÓN: Calcular dinámicamente los índices de las vocales
