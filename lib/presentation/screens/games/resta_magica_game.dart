@@ -219,11 +219,11 @@ class _RestaMagicaGameState extends State<RestaMagicaGame> {
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 800),
                           child: Container(
-                            margin: const EdgeInsets.all(16),
-                            padding: const EdgeInsets.all(24),
+                            margin: EdgeInsets.all(screenWidth > 600 ? 16 : 8),
+                            padding: EdgeInsets.all(screenWidth > 600 ? 24 : 12),
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(screenWidth > 600 ? 20 : 12),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black.withValues(alpha: 0.1),
@@ -233,12 +233,17 @@ class _RestaMagicaGameState extends State<RestaMagicaGame> {
                               ],
                             ),
                             child: Column(
+                              mainAxisSize: MainAxisSize.min,
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
-                                _buildCharacter(),
+                                if (screenWidth > 600) _buildCharacter(),
                                 _buildProblem(),
+                                const SizedBox(height: 8),
                                 _buildOptions(),
-                                if (_showFeedback) _buildFeedback(),
+                                if (_showFeedback) ...[
+                                  const SizedBox(height: 8),
+                                  _buildFeedback(),
+                                ],
                               ],
                             ),
                           ),
@@ -393,25 +398,28 @@ class _RestaMagicaGameState extends State<RestaMagicaGame> {
   }
 
   Widget _buildProblem() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth <= 600;
+
     return Column(
       children: [
         Text(
           '¿Cuántos quedan?',
           style: GoogleFonts.fredoka(
-            fontSize: 18,
+            fontSize: isMobile ? 14 : 18,
             fontWeight: FontWeight.w600,
             color: Colors.grey.shade700,
           ),
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: isMobile ? 8 : 20),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             _buildEmojiGroup(_currentProblem?.operand1 ?? 0, _currentProblem?.visualType.emoji ?? '🌟', showAll: true),
-            const SizedBox(width: 20),
+            SizedBox(width: isMobile ? 8 : 20),
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(isMobile ? 4 : 8),
               decoration: BoxDecoration(
                 color: AppColors.mathColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
@@ -419,13 +427,13 @@ class _RestaMagicaGameState extends State<RestaMagicaGame> {
               child: Text(
                 '-',
                 style: GoogleFonts.fredoka(
-                  fontSize: 36,
+                  fontSize: isMobile ? 20 : 36,
                   fontWeight: FontWeight.bold,
                   color: AppColors.mathColor,
                 ),
               ),
             ),
-            const SizedBox(width: 20),
+            SizedBox(width: isMobile ? 8 : 20),
             _buildEmojiGroup(_currentProblem?.operand2 ?? 0, _currentProblem?.visualType.emoji ?? '🌟', showCrossed: true),
           ],
         ),
@@ -434,12 +442,15 @@ class _RestaMagicaGameState extends State<RestaMagicaGame> {
   }
 
   Widget _buildEmojiGroup(int count, String emoji, {bool showAll = false, bool showCrossed = false}) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth <= 600;
+
     return Container(
       constraints: const BoxConstraints(maxWidth: 180),
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(isMobile ? 4 : 8),
       decoration: BoxDecoration(
         color: AppColors.mathColor.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(isMobile ? 6 : 12),
         border: Border.all(
           color: showCrossed
               ? Colors.red.withValues(alpha: 0.3)
@@ -448,8 +459,8 @@ class _RestaMagicaGameState extends State<RestaMagicaGame> {
         ),
       ),
       child: Wrap(
-        spacing: 6,
-        runSpacing: 6,
+        spacing: isMobile ? 3 : 6,
+        runSpacing: isMobile ? 3 : 6,
         alignment: WrapAlignment.center,
         children: List.generate(
           count,
@@ -459,15 +470,15 @@ class _RestaMagicaGameState extends State<RestaMagicaGame> {
               Text(
                 emoji, // ✅ Usar emoji dinámico del MathDataBank
                 style: TextStyle(
-                  fontSize: 32,
+                  fontSize: isMobile ? 16 : 24,
                   color: showCrossed ? Colors.grey.shade400 : null,
                 ),
               ),
               if (showCrossed)
-                const Icon(
+                Icon(
                   Icons.close,
                   color: Colors.red,
-                  size: 32,
+                  size: isMobile ? 16 : 24,
                 ),
             ],
           ),
@@ -479,6 +490,9 @@ class _RestaMagicaGameState extends State<RestaMagicaGame> {
   Widget _buildOptions() {
     if (_currentProblem == null) return const SizedBox.shrink();
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth <= 600;
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -488,40 +502,27 @@ class _RestaMagicaGameState extends State<RestaMagicaGame> {
             padding: const EdgeInsets.symmetric(horizontal: 6),
             child: Material(
               color: _getOptionColor(option),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(isMobile ? 12 : 16),
               child: InkWell(
                 onTap: _showFeedback ? null : () => _checkAnswer(option),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(isMobile ? 12 : 16),
                 child: Container(
-                  width: 140,
-                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+                  width: isMobile ? 70 : 100,
+                  padding: EdgeInsets.symmetric(vertical: isMobile ? 12 : 20, horizontal: 8),
                   decoration: BoxDecoration(
                     border: Border.all(
                       color: _getOptionBorderColor(option),
-                      width: 3,
+                      width: isMobile ? 2 : 3,
                     ),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(isMobile ? 12 : 16),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Wrap(
-                        spacing: 4,
-                        runSpacing: 4,
-                        alignment: WrapAlignment.center,
-                        children: List.generate(
-                          option.clamp(0, 15),
-                          (index) => Text(
-                            _currentProblem!.visualType.emoji, // ✅ Usar emoji dinámico
-                            style: const TextStyle(fontSize: 20),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
                       Text(
                         '$option',
                         style: GoogleFonts.fredoka(
-                          fontSize: 24,
+                          fontSize: isMobile ? 20 : 28,
                           fontWeight: FontWeight.bold,
                           color: AppColors.mathColor,
                         ),
@@ -538,6 +539,9 @@ class _RestaMagicaGameState extends State<RestaMagicaGame> {
   }
 
   Widget _buildFeedback() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth <= 600;
+
     return TweenAnimationBuilder(
       duration: const Duration(milliseconds: 300),
       tween: Tween<double>(begin: 0, end: 1),
@@ -545,7 +549,7 @@ class _RestaMagicaGameState extends State<RestaMagicaGame> {
         return Opacity(
           opacity: value,
           child: Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(isMobile ? 8 : 16),
             decoration: BoxDecoration(
               color: _isCorrect ? Colors.green.shade50 : Colors.red.shade50,
               borderRadius: BorderRadius.circular(12),
@@ -555,21 +559,22 @@ class _RestaMagicaGameState extends State<RestaMagicaGame> {
               ),
             ),
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   _isCorrect ? Icons.check_circle : Icons.cancel,
                   color: _isCorrect ? Colors.green : Colors.red,
-                  size: 28,
+                  size: isMobile ? 20 : 28,
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: isMobile ? 6 : 12),
                 Flexible(
                   child: Text(
                     _isCorrect
                         ? '¡Correcto! +${10 + (_timeRemaining / 10).floor() * 2 + ((_consecutiveCorrect > 1) ? (_consecutiveCorrect - 1) * 5 : 0)} puntos'
                         : '¡Ups! La respuesta era ${_currentProblem?.correctAnswer ?? 0} (-5 puntos)',
                     style: GoogleFonts.fredoka(
-                      fontSize: 16,
+                      fontSize: isMobile ? 12 : 16,
                       fontWeight: FontWeight.w600,
                       color: _isCorrect ? Colors.green.shade900 : Colors.red.shade900,
                     ),

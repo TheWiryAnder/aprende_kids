@@ -215,11 +215,11 @@ class _DivisionDetectiveGameState extends State<DivisionDetectiveGame> {
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 800),
                           child: Container(
-                            margin: const EdgeInsets.all(16),
-                            padding: const EdgeInsets.all(24),
+                            margin: EdgeInsets.all(screenWidth > 600 ? 16 : 8),
+                            padding: EdgeInsets.all(screenWidth > 600 ? 24 : 12),
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(screenWidth > 600 ? 20 : 12),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black.withValues(alpha: 0.2),
@@ -229,12 +229,17 @@ class _DivisionDetectiveGameState extends State<DivisionDetectiveGame> {
                               ],
                             ),
                             child: Column(
+                              mainAxisSize: MainAxisSize.min,
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
-                                _buildCharacter(),
+                                if (screenWidth > 600) _buildCharacter(),
                                 _buildProblem(),
+                                const SizedBox(height: 8),
                                 _buildOptions(),
-                                if (_showFeedback) _buildFeedback(),
+                                if (_showFeedback) ...[
+                                  const SizedBox(height: 8),
+                                  _buildFeedback(),
+                                ],
                               ],
                             ),
                           ),
@@ -391,89 +396,92 @@ class _DivisionDetectiveGameState extends State<DivisionDetectiveGame> {
   Widget _buildProblem() {
     if (_currentProblem == null) return const SizedBox.shrink();
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth <= 600;
+
     return Column(
       children: [
         Text(
           _currentProblem!.questionText,
           style: GoogleFonts.fredoka(
-            fontSize: 18,
+            fontSize: isMobile ? 14 : 18,
             fontWeight: FontWeight.w600,
             color: Colors.grey.shade700,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: isMobile ? 4 : 8),
         Text(
           '${_currentProblem!.operand1} ÷ ${_currentProblem!.operand2}',
           style: GoogleFonts.fredoka(
-            fontSize: 28,
+            fontSize: isMobile ? 20 : 28,
             fontWeight: FontWeight.bold,
             color: Colors.brown.shade800,
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: isMobile ? 8 : 16),
         Text(
           'Distribuye ${_currentProblem!.operand1} objetos en ${_currentProblem!.operand2} grupos',
           style: GoogleFonts.fredoka(
-            fontSize: 14,
+            fontSize: isMobile ? 13 : 16,
             color: Colors.grey.shade600,
           ),
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: isMobile ? 8 : 20),
 
         // Mostrar todos los objetos
         Container(
-          padding: const EdgeInsets.all(12),
+          padding: EdgeInsets.all(isMobile ? 4 : 8),
           decoration: BoxDecoration(
             color: Colors.brown.shade50,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(isMobile ? 6 : 12),
             border: Border.all(
               color: Colors.brown.shade300,
               width: 2,
             ),
           ),
           child: Wrap(
-            spacing: 6,
-            runSpacing: 6,
+            spacing: isMobile ? 3 : 6,
+            runSpacing: isMobile ? 3 : 6,
             alignment: WrapAlignment.center,
             children: List.generate(
               _currentProblem!.operand1.clamp(0, 30), // Limitar para no saturar
               (index) => Text(
                 _currentProblem!.visualType.emoji,
-                style: const TextStyle(fontSize: 24),
+                style: TextStyle(fontSize: isMobile ? 16 : 24),
               ),
             ),
           ),
         ),
 
-        const SizedBox(height: 16),
+        SizedBox(height: isMobile ? 8 : 16),
 
         // Flecha hacia abajo
-        Icon(Icons.arrow_downward, size: 32, color: Colors.brown.shade600),
+        Icon(Icons.arrow_downward, size: isMobile ? 20 : 32, color: Colors.brown.shade600),
 
-        const SizedBox(height: 8),
+        SizedBox(height: isMobile ? 4 : 8),
 
         // Mostrar grupos vacíos
         Text(
           'Dividir en ${_currentProblem!.operand2} grupos iguales:',
           style: GoogleFonts.fredoka(
-            fontSize: 14,
+            fontSize: isMobile ? 13 : 16,
             fontWeight: FontWeight.w600,
             color: Colors.grey.shade700,
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: isMobile ? 6 : 12),
 
         Wrap(
-          spacing: 8,
-          runSpacing: 8,
+          spacing: isMobile ? 4 : 8,
+          runSpacing: isMobile ? 4 : 8,
           alignment: WrapAlignment.center,
           children: List.generate(_currentProblem!.operand2, (index) {
             return Container(
-              width: 80,
-              height: 60,
+              width: isMobile ? 60 : 80,
+              height: isMobile ? 45 : 60,
               decoration: BoxDecoration(
                 color: Colors.brown.shade50,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(isMobile ? 6 : 8),
                 border: Border.all(
                   color: Colors.brown.shade400,
                   width: 2,
@@ -484,7 +492,7 @@ class _DivisionDetectiveGameState extends State<DivisionDetectiveGame> {
                 child: Text(
                   '?',
                   style: GoogleFonts.fredoka(
-                    fontSize: 24,
+                    fontSize: isMobile ? 18 : 24,
                     fontWeight: FontWeight.bold,
                     color: Colors.brown.shade600,
                   ),
@@ -500,6 +508,9 @@ class _DivisionDetectiveGameState extends State<DivisionDetectiveGame> {
   Widget _buildOptions() {
     if (_currentProblem == null) return const SizedBox.shrink();
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth <= 600;
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -509,19 +520,19 @@ class _DivisionDetectiveGameState extends State<DivisionDetectiveGame> {
             padding: const EdgeInsets.symmetric(horizontal: 6),
             child: Material(
               color: _getOptionColor(option),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(isMobile ? 12 : 16),
               child: InkWell(
                 onTap: _showFeedback ? null : () => _checkAnswer(option),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(isMobile ? 12 : 16),
                 child: Container(
-                  width: 110,
-                  padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
+                  width: isMobile ? 70 : 100,
+                  padding: EdgeInsets.symmetric(vertical: isMobile ? 12 : 20, horizontal: 8),
                   decoration: BoxDecoration(
                     border: Border.all(
                       color: _getOptionBorderColor(option),
-                      width: 3,
+                      width: isMobile ? 2 : 3,
                     ),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(isMobile ? 12 : 16),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -530,16 +541,16 @@ class _DivisionDetectiveGameState extends State<DivisionDetectiveGame> {
                         '$option',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.fredoka(
-                          fontSize: 32,
+                          fontSize: isMobile ? 20 : 28,
                           fontWeight: FontWeight.bold,
                           color: Colors.brown.shade800,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: isMobile ? 2 : 4),
                       Text(
                         'c/grupo',
                         style: GoogleFonts.fredoka(
-                          fontSize: 12,
+                          fontSize: isMobile ? 10 : 12,
                           color: Colors.grey.shade600,
                         ),
                       ),
@@ -557,6 +568,9 @@ class _DivisionDetectiveGameState extends State<DivisionDetectiveGame> {
   Widget _buildFeedback() {
     if (_currentProblem == null) return const SizedBox.shrink();
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth <= 600;
+
     return TweenAnimationBuilder(
       duration: const Duration(milliseconds: 300),
       tween: Tween<double>(begin: 0, end: 1),
@@ -564,7 +578,7 @@ class _DivisionDetectiveGameState extends State<DivisionDetectiveGame> {
         return Opacity(
           opacity: value,
           child: Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(isMobile ? 8 : 16),
             decoration: BoxDecoration(
               color: _isCorrect ? Colors.green.shade50 : Colors.red.shade50,
               borderRadius: BorderRadius.circular(12),
@@ -574,21 +588,22 @@ class _DivisionDetectiveGameState extends State<DivisionDetectiveGame> {
               ),
             ),
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   _isCorrect ? Icons.check_circle : Icons.cancel,
                   color: _isCorrect ? Colors.green : Colors.red,
-                  size: 28,
+                  size: isMobile ? 20 : 28,
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: isMobile ? 6 : 12),
                 Flexible(
                   child: Text(
                     _isCorrect
                         ? '¡Caso resuelto! +${20 + (_timeRemaining / 10).floor() * 4 + ((_consecutiveCorrect > 1) ? (_consecutiveCorrect - 1) * 8 : 0)} puntos'
                         : '¡Error! Eran ${_currentProblem!.correctAnswer} por grupo (-10 puntos)',
                     style: GoogleFonts.fredoka(
-                      fontSize: 16,
+                      fontSize: isMobile ? 12 : 16,
                       fontWeight: FontWeight.w600,
                       color: _isCorrect ? Colors.green.shade900 : Colors.red.shade900,
                     ),
