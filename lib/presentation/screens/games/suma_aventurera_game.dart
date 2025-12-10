@@ -603,7 +603,7 @@ class _SumaAventureraGameState extends State<SumaAventureraGame> {
                 Text(
                   _isCorrect
                       ? '¡Muy bien! +${10 + (_timeRemaining / 10).floor() * 2 + ((_consecutiveCorrect > 1) ? (_consecutiveCorrect - 1) * 5 : 0)} puntos'
-                      : 'Intenta de nuevo. La respuesta era $_correctAnswer',
+                      : 'Intenta de nuevo. La respuesta era ${_currentProblem?.correctAnswer ?? 0}',
                   style: GoogleFonts.fredoka(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
