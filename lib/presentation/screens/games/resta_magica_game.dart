@@ -21,6 +21,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../app/theme/colors.dart';
 import '../../widgets/game_video_widget.dart';
+import '../../../data/math_data_bank.dart';
 
 class RestaMagicaGame extends StatefulWidget {
   const RestaMagicaGame({super.key});
@@ -30,26 +31,14 @@ class RestaMagicaGame extends StatefulWidget {
 }
 
 class _RestaMagicaGameState extends State<RestaMagicaGame> {
-  final Random _random = Random();
-
   // Estado del juego
   int _currentScore = 0;
   int _questionsAnswered = 0;
   int _correctAnswers = 0;
   int _consecutiveCorrect = 0;
 
-  // Problema actual
-  int _num1 = 0; // Número mayor
-  int _num2 = 0; // Número menor
-  int _correctAnswer = 0;
-  List<int> _options = [];
-  String _currentEmoji = '🌟';
-
-  // Lista de emojis mágicos
-  final List<String> _emojis = [
-    '🌟', '✨', '💫', '🔮', '🪄', '🎩', '🎭', '🎪',
-    '🎨', '🎯', '🎲', '🧩', '🎴', '🃏', '🎰'
-  ];
+  // ✅ GENERACIÓN PROCEDURAL: Problema actual generado dinámicamente
+  MathProblem? _currentProblem;
 
   // Control de tiempo
   Timer? _gameTimer;
@@ -87,52 +76,28 @@ class _RestaMagicaGameState extends State<RestaMagicaGame> {
 
   void _generateNewProblem() {
     setState(() {
-      int maxNum = 5 + (_correctAnswers ~/ 3).clamp(0, 10);
-
-      // Generar número mayor primero
-      _num1 = _random.nextInt(maxNum) + 2; // Mínimo 2
-
-      // Número menor debe ser menor que num1
-      _num2 = _random.nextInt(_num1);
-
-      // Asegurar que num2 no sea 0 al inicio
-      if (_correctAnswers < 3 && _num2 == 0) {
-        _num2 = 1;
+      // ✅ GENERACIÓN PROCEDURAL: Determinar nivel progresivo
+      int level = 1;
+      if (_correctAnswers >= 8) {
+        level = 3;
+      } else if (_correctAnswers >= 3) {
+        level = 2;
       }
 
-      _correctAnswer = _num1 - _num2;
-
-      _currentEmoji = _emojis[_random.nextInt(_emojis.length)];
-      _options = _generateOptions(_correctAnswer);
-      _options.shuffle();
+      // ✅ GENERACIÓN PROCEDURAL: Usar MathDataBank para restas
+      _currentProblem = MathDataBank.generateSubtraction(level: level);
 
       _showFeedback = false;
       _selectedAnswer = null;
     });
   }
 
-  List<int> _generateOptions(int correct) {
-    List<int> options = [correct];
-
-    while (options.length < 4) {
-      int offset = _random.nextInt(5) - 2;
-      if (offset == 0) offset = _random.nextBool() ? 3 : -3;
-
-      int wrongAnswer = correct + offset;
-      if (wrongAnswer >= 0 && !options.contains(wrongAnswer)) {
-        options.add(wrongAnswer);
-      }
-    }
-
-    return options;
-  }
-
   void _checkAnswer(int selectedAnswer) {
-    if (_showFeedback) return;
+    if (_showFeedback || _currentProblem == null) return;
 
     setState(() {
       _selectedAnswer = selectedAnswer;
-      _isCorrect = selectedAnswer == _correctAnswer;
+      _isCorrect = selectedAnswer == _currentProblem!.correctAnswer;
       _showFeedback = true;
       _questionsAnswered++;
 
@@ -181,22 +146,22 @@ class _RestaMagicaGameState extends State<RestaMagicaGame> {
   }
 
   Color _getOptionColor(int option) {
-    if (!_showFeedback) return Colors.white;
+    if (!_showFeedback || _currentProblem == null) return Colors.white;
     if (option == _selectedAnswer) {
       return _isCorrect ? Colors.green.shade100 : Colors.red.shade100;
     }
-    if (option == _correctAnswer && !_isCorrect) {
+    if (option == _currentProblem!.correctAnswer && !_isCorrect) {
       return Colors.green.shade100;
     }
     return Colors.white;
   }
 
   Color _getOptionBorderColor(int option) {
-    if (!_showFeedback) return AppColors.mathColor;
+    if (!_showFeedback || _currentProblem == null) return AppColors.mathColor;
     if (option == _selectedAnswer) {
       return _isCorrect ? Colors.green : Colors.red;
     }
-    if (option == _correctAnswer && !_isCorrect) {
+    if (option == _currentProblem!.correctAnswer && !_isCorrect) {
       return Colors.green;
     }
     return AppColors.mathColor.withValues(alpha: 0.3);
@@ -443,7 +408,7 @@ class _RestaMagicaGameState extends State<RestaMagicaGame> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            _buildEmojiGroup(_num1, showAll: true),
+            _buildEmojiGroup(_currentProblem?.operand1 ?? 0, _currentProblem?.visualType.emoji ?? '🌟', showAll: true),
             const SizedBox(width: 20),
             Container(
               padding: const EdgeInsets.all(12),
@@ -461,14 +426,14 @@ class _RestaMagicaGameState extends State<RestaMagicaGame> {
               ),
             ),
             const SizedBox(width: 20),
-            _buildEmojiGroup(_num2, showCrossed: true),
+            _buildEmojiGroup(_currentProblem?.operand2 ?? 0, _currentProblem?.visualType.emoji ?? '🌟', showCrossed: true),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildEmojiGroup(int count, {bool showAll = false, bool showCrossed = false}) {
+  Widget _buildEmojiGroup(int count, String emoji, {bool showAll = false, bool showCrossed = false}) {
     return Container(
       constraints: const BoxConstraints(maxWidth: 180),
       padding: const EdgeInsets.all(12),
@@ -492,7 +457,7 @@ class _RestaMagicaGameState extends State<RestaMagicaGame> {
             alignment: Alignment.center,
             children: [
               Text(
-                _currentEmoji,
+                emoji, // ✅ Usar emoji dinámico del MathDataBank
                 style: TextStyle(
                   fontSize: 32,
                   color: showCrossed ? Colors.grey.shade400 : null,
@@ -512,11 +477,13 @@ class _RestaMagicaGameState extends State<RestaMagicaGame> {
   }
 
   Widget _buildOptions() {
+    if (_currentProblem == null) return const SizedBox.shrink();
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: _options.map((option) {
+        children: _currentProblem!.options.map((option) {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 6),
             child: Material(
@@ -545,7 +512,7 @@ class _RestaMagicaGameState extends State<RestaMagicaGame> {
                         children: List.generate(
                           option.clamp(0, 15),
                           (index) => Text(
-                            _currentEmoji,
+                            _currentProblem!.visualType.emoji, // ✅ Usar emoji dinámico
                             style: const TextStyle(fontSize: 20),
                           ),
                         ),
@@ -600,7 +567,7 @@ class _RestaMagicaGameState extends State<RestaMagicaGame> {
                   child: Text(
                     _isCorrect
                         ? '¡Correcto! +${10 + (_timeRemaining / 10).floor() * 2 + ((_consecutiveCorrect > 1) ? (_consecutiveCorrect - 1) * 5 : 0)} puntos'
-                        : '¡Ups! La respuesta era $_correctAnswer (-5 puntos)',
+                        : '¡Ups! La respuesta era ${_currentProblem?.correctAnswer ?? 0} (-5 puntos)',
                     style: GoogleFonts.fredoka(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
