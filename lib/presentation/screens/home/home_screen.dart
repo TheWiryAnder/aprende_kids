@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
       await Scrollable.ensureVisible(
         key.currentContext!,
         duration: const Duration(milliseconds: 600),
-        alignment: 0.2, // ✅ AJUSTADO: 0.2 = sube MÁS el elemento (20% desde arriba)
+        alignment: 0.4, // ✅ BALANCEADO: 0.4 = elemento al 40% (no tan arriba, no tan abajo)
         curve: Curves.easeInOut,
       );
 
@@ -445,8 +445,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
                             // ✅ COLCHÓN DE SCROLL: Espacio extra para que el tutorial
                             // pueda mostrar el globo completo en elementos inferiores
-                            // AUMENTADO a 400px para asegurar visibilidad total
-                            const SizedBox(height: 400),
+                            // REDUCIDO a 250px para balance entre visibilidad y espacio
+                            const SizedBox(height: 250),
                           ],
                         ),
                       ),
