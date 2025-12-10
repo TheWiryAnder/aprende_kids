@@ -19,6 +19,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../widgets/game_video_widget.dart';
+import '../../../data/science_data_bank.dart';
 
 class PlanetaTierraGame extends StatefulWidget {
   const PlanetaTierraGame({super.key});
@@ -30,128 +31,11 @@ class PlanetaTierraGame extends StatefulWidget {
 class _PlanetaTierraGameState extends State<PlanetaTierraGame> {
   final Random _random = Random();
 
-  // Banco de preguntas sobre el planeta Tierra
-  final List<Map<String, dynamic>> _questions = [
-    {
-      'question': '¿Qué causa las estaciones del año?',
-      'options': [
-        'La inclinación de la Tierra 🌍',
-        'La distancia al Sol ☀️',
-        'Las nubes ☁️',
-        'La Luna 🌙'
-      ],
-      'correct': 0,
-    },
-    {
-      'question': '¿Cuántos continentes hay en la Tierra?',
-      'options': ['Cinco 5️⃣', 'Seis 6️⃣', 'Siete 7️⃣', 'Ocho 8️⃣'],
-      'correct': 2,
-    },
-    {
-      'question': '¿Cuál es el océano más grande?',
-      'options': [
-        'Atlántico 🌊',
-        'Índico 🌊',
-        'Pacífico 🌊',
-        'Ártico 🧊'
-      ],
-      'correct': 2,
-    },
-    {
-      'question': '¿Qué es la atmósfera?',
-      'options': [
-        'El agua del planeta 💧',
-        'La capa de aire 💨',
-        'El núcleo 🔥',
-        'La corteza 🪨'
-      ],
-      'correct': 1,
-    },
-    {
-      'question': '¿Qué fenómeno causa la lluvia?',
-      'options': [
-        'Evaporación y condensación 💧',
-        'El viento 💨',
-        'Los volcanes 🌋',
-        'Los terremotos 🌍'
-      ],
-      'correct': 0,
-    },
-    {
-      'question': '¿Cuál es la montaña más alta del mundo?',
-      'options': [
-        'Monte Kilimanjaro 🏔️',
-        'Monte Everest 🏔️',
-        'Monte Fuji 🗻',
-        'Monte Aconcagua 🏔️'
-      ],
-      'correct': 1,
-    },
-    {
-      'question': '¿Qué porcentaje de la Tierra está cubierto de agua?',
-      'options': [
-        'Aproximadamente 50% 💧',
-        'Aproximadamente 70% 🌊',
-        'Aproximadamente 30% 💦',
-        'Aproximadamente 90% 🌊'
-      ],
-      'correct': 1,
-    },
-    {
-      'question': '¿Qué causa los terremotos?',
-      'options': [
-        'El viento 💨',
-        'La lluvia 🌧️',
-        'El movimiento de placas tectónicas 🌍',
-        'Los volcanes 🌋'
-      ],
-      'correct': 2,
-    },
-    {
-      'question': '¿Cuál es el desierto más grande del mundo?',
-      'options': [
-        'Desierto de Sahara 🏜️',
-        'Desierto de Gobi 🏜️',
-        'Desierto de Atacama 🏜️',
-        'Antártida (desierto polar) ❄️'
-      ],
-      'correct': 3,
-    },
-    {
-      'question': '¿Qué es un volcán?',
-      'options': [
-        'Una montaña normal 🏔️',
-        'Abertura que expulsa lava 🌋',
-        'Un río de piedras 🪨',
-        'Una cueva profunda 🕳️'
-      ],
-      'correct': 1,
-    },
-    {
-      'question': '¿Cuánto tarda la Tierra en girar sobre sí misma?',
-      'options': [
-        '12 horas ⏰',
-        '24 horas 🌍',
-        '7 días 📅',
-        '365 días 📆'
-      ],
-      'correct': 1,
-    },
-    {
-      'question': '¿Qué es el ecuador?',
-      'options': [
-        'Un océano 🌊',
-        'Una montaña 🏔️',
-        'Línea imaginaria que divide la Tierra 🌍',
-        'Un continente 🗺️'
-      ],
-      'correct': 2,
-    },
-  ];
-
-  List<Map<String, dynamic>> _gameQuestions = [];
+  // ✅ SCIENCE DATA BANK: Usar banco de datos extenso de ciencias
+  // Combinar preguntas de espacio, ecosistemas y plantas relacionadas con la Tierra
+  List<ScienceQuestion> _scienceQuestions = [];
   int _currentQuestionIndex = 0;
-  Map<String, dynamic> _currentQuestion = {};
+  ScienceQuestion? _currentQuestion;
 
   int _currentScore = 0;
   int _questionsAnswered = 0;
@@ -181,8 +65,14 @@ class _PlanetaTierraGameState extends State<PlanetaTierraGame> {
   }
 
   void _initializeGame() {
-    _gameQuestions = List.from(_questions)..shuffle(_random);
-    _gameQuestions = _gameQuestions.take(_totalQuestions).toList();
+    // ✅ SCIENCE DATA BANK: Obtener preguntas de categorías relacionadas con la Tierra
+    final spaceQuestions = ScienceDataBank.spaceQuestions;
+    final ecosystemQuestions = ScienceDataBank.ecosystemsQuestions;
+
+    // Combinar y mezclar
+    _scienceQuestions = [...spaceQuestions, ...ecosystemQuestions];
+    _scienceQuestions.shuffle(_random);
+    _scienceQuestions = _scienceQuestions.take(_totalQuestions).toList();
     _loadQuestion();
   }
 
@@ -201,9 +91,9 @@ class _PlanetaTierraGameState extends State<PlanetaTierraGame> {
   }
 
   void _loadQuestion() {
-    if (_currentQuestionIndex < _gameQuestions.length) {
+    if (_currentQuestionIndex < _scienceQuestions.length) {
       setState(() {
-        _currentQuestion = _gameQuestions[_currentQuestionIndex];
+        _currentQuestion = _scienceQuestions[_currentQuestionIndex];
         _showFeedback = false;
         _selectedAnswer = null;
       });
@@ -213,11 +103,15 @@ class _PlanetaTierraGameState extends State<PlanetaTierraGame> {
   }
 
   void _checkAnswer(int selectedIndex) {
-    if (_showFeedback) return;
+    if (_showFeedback || _currentQuestion == null) return;
+
+    // Obtener las opciones mezcladas
+    final options = _currentQuestion!.allOptions;
+    final selectedAnswer = options[selectedIndex];
 
     setState(() {
       _selectedAnswer = selectedIndex;
-      _isCorrect = selectedIndex == (_currentQuestion['correct'] as int);
+      _isCorrect = selectedAnswer == _currentQuestion!.correctAnswer;
       _showFeedback = true;
       _questionsAnswered++;
 
@@ -269,15 +163,18 @@ class _PlanetaTierraGameState extends State<PlanetaTierraGame> {
   }
 
   Color _getOptionColor(int index) {
-    if (!_showFeedback) {
+    if (!_showFeedback || _currentQuestion == null) {
       return Colors.white;
     }
+
+    final options = _currentQuestion!.allOptions;
+    final selectedAnswer = options[index];
 
     if (index == _selectedAnswer) {
       return _isCorrect ? Colors.green.shade100 : Colors.red.shade100;
     }
 
-    if (index == (_currentQuestion['correct'] as int) && !_isCorrect) {
+    if (selectedAnswer == _currentQuestion!.correctAnswer && !_isCorrect) {
       return Colors.green.shade100;
     }
 
@@ -285,15 +182,18 @@ class _PlanetaTierraGameState extends State<PlanetaTierraGame> {
   }
 
   Color _getOptionBorderColor(int index) {
-    if (!_showFeedback) {
+    if (!_showFeedback || _currentQuestion == null) {
       return Colors.green.shade400;
     }
+
+    final options = _currentQuestion!.allOptions;
+    final selectedAnswer = options[index];
 
     if (index == _selectedAnswer) {
       return _isCorrect ? Colors.green : Colors.red;
     }
 
-    if (index == (_currentQuestion['correct'] as int) && !_isCorrect) {
+    if (selectedAnswer == _currentQuestion!.correctAnswer && !_isCorrect) {
       return Colors.green;
     }
 
@@ -529,6 +429,8 @@ class _PlanetaTierraGameState extends State<PlanetaTierraGame> {
   }
 
   Widget _buildProblem() {
+    if (_currentQuestion == null) return const SizedBox.shrink();
+
     return Column(
       children: [
         Text(
@@ -540,8 +442,16 @@ class _PlanetaTierraGameState extends State<PlanetaTierraGame> {
           ),
         ),
         const SizedBox(height: 12),
+        // Mostrar emoji de la pregunta si existe
+        if (_currentQuestion!.images.isNotEmpty) ...[
+          Text(
+            _currentQuestion!.randomImage,
+            style: const TextStyle(fontSize: 48),
+          ),
+          const SizedBox(height: 12),
+        ],
         Text(
-          _currentQuestion['question'] as String? ?? '',
+          _currentQuestion!.question,
           style: GoogleFonts.fredoka(
             fontSize: 20,
             fontWeight: FontWeight.w600,
@@ -554,7 +464,9 @@ class _PlanetaTierraGameState extends State<PlanetaTierraGame> {
   }
 
   Widget _buildOptions() {
-    final options = _currentQuestion['options'] as List<dynamic>? ?? [];
+    if (_currentQuestion == null) return const SizedBox.shrink();
+
+    final options = _currentQuestion!.allOptions;
 
     return Column(
       children: List.generate(options.length, (index) {
@@ -577,7 +489,7 @@ class _PlanetaTierraGameState extends State<PlanetaTierraGame> {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Text(
-                  options[index] as String,
+                  options[index],
                   style: GoogleFonts.fredoka(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
