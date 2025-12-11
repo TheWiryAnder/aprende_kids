@@ -44,8 +44,11 @@ class _HomeScreenState extends State<HomeScreen> {
   // GlobalKeys para los elementos del tutorial
   final GlobalKey _avatarKey = GlobalKey();
   final GlobalKey _categoriesKey = GlobalKey();
-  final GlobalKey _gamesZoneKey = GlobalKey();
+  final GlobalKey _gameCardsKey = GlobalKey(); // ✅ Key específica para tarjetas de juegos
   final GlobalKey _coinsKey = GlobalKey();
+
+  // ✅ ÍNDICE DE NAVEGACIÓN: Para controlar qué pantalla está activa
+  int _currentIndex = 0;
 
   @override
   void initState() {
@@ -183,8 +186,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icons.school,
                 color: Colors.green,
                 onNext: () async {
-                  // ✅ SCROLL AUTOMÁTICO: Antes de pasar al paso 4, hacer scroll
-                  await _scrollToTarget(_gamesZoneKey);
+                  // ✅ SCROLL AUTOMÁTICO: Antes de pasar al paso 4, hacer scroll a las tarjetas
+                  await _scrollToTarget(_gameCardsKey);
                   controller.next();
                 },
                 onSkip: controller.skip,
@@ -195,10 +198,10 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
 
-      // Paso 4: Zona de Juegos (CRÍTICO: Este está fuera de vista en móvil)
+      // Paso 4: Tarjetas de Juegos (con scroll automático)
       TargetFocus(
-        identify: "games_zone",
-        keyTarget: _gamesZoneKey,
+        identify: "game_cards",
+        keyTarget: _gameCardsKey,
         shape: ShapeLightFocus.RRect,
         radius: 10,
         enableOverlayTab: true,
@@ -437,16 +440,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
                             const SizedBox(height: 48),
 
-                            // Nueva sección: Zona de Juegos (con GlobalKey para tutorial)
-                            Container(
-                              key: _gamesZoneKey,
-                              child: _buildGamesZoneSection(context),
-                            ),
+                            // Nueva sección: Zona de Juegos
+                            _buildGamesZoneSection(context),
 
                             // ✅ COLCHÓN DE SCROLL: Espacio extra para que el tutorial
                             // pueda mostrar el globo completo en elementos inferiores
-                            // MÍNIMO: 180px - solo para mostrar tarjetas sin exceso
-                            const SizedBox(height: 180),
+                            // AUMENTADO: 280px para dar espacio a la barra de navegación
+                            const SizedBox(height: 280),
                           ],
                         ),
                       ),
@@ -456,6 +456,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
+          // ✅ BARRA DE NAVEGACIÓN INFERIOR con estilo azul igual al header
+          bottomNavigationBar: _buildBottomNavigationBar(context),
         );
       },
     );
@@ -484,8 +486,11 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(height: 24),
 
-        // Juegos de distracción
-        _buildFunGamesRow(context),
+        // Juegos de distracción (con GlobalKey para tutorial)
+        Container(
+          key: _gameCardsKey,
+          child: _buildFunGamesRow(context),
+        ),
       ],
     );
   }
@@ -1227,6 +1232,115 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
         ),
+      ),
+    );
+  }
+
+  /// ✅ BARRA DE NAVEGACIÓN INFERIOR
+  /// Estilo azul igual al header superior con bordes redondeados superiores
+  Widget _buildBottomNavigationBar(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFF4A90E2), // Mismo azul del header
+            Color(0xFF50E3C2), // Mismo gradiente del header
+          ],
+        ),
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(30), // Bordes redondeados superiores
+          topRight: Radius.circular(30),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 15,
+            offset: const Offset(0, -5), // Sombra hacia arriba
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              // Botón Inicio
+              _buildNavButton(
+                icon: Icons.home,
+                label: 'Inicio',
+                index: 0,
+                onTap: () {
+                  setState(() => _currentIndex = 0);
+                  // Ya estamos en Home, no hacer nada
+                },
+              ),
+
+              // Botón Ranking
+              _buildNavButton(
+                icon: Icons.emoji_events,
+                label: 'Ranking',
+                index: 1,
+                onTap: () {
+                  setState(() => _currentIndex = 1);
+                  context.push('/ranking');
+                },
+              ),
+
+              // Botón Perfil
+              _buildNavButton(
+                icon: Icons.person,
+                label: 'Perfil',
+                index: 2,
+                onTap: () {
+                  setState(() => _currentIndex = 2);
+                  context.push('/profile');
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Widget para cada botón de navegación
+  Widget _buildNavButton({
+    required IconData icon,
+    required String label,
+    required int index,
+    required VoidCallback onTap,
+  }) {
+    final isSelected = _currentIndex == index;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Icono
+          Icon(
+            icon,
+            size: isSelected ? 32 : 28,
+            color: isSelected
+                ? Colors.amber.shade300 // Color dorado cuando está seleccionado
+                : Colors.white.withValues(alpha: 0.7), // Blanco con opacidad cuando no está seleccionado
+          ),
+          const SizedBox(height: 4),
+          // Label
+          Text(
+            label,
+            style: GoogleFonts.fredoka(
+              fontSize: isSelected ? 13 : 12,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              color: isSelected
+                  ? Colors.amber.shade300
+                  : Colors.white.withValues(alpha: 0.7),
+            ),
+          ),
+        ],
       ),
     );
   }
