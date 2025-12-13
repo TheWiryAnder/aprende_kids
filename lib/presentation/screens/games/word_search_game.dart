@@ -43,6 +43,9 @@ class _WordSearchGameState extends State<WordSearchGame> {
   int? _selectionStartCol;
   String? _selectionDirection; // 'horizontal' o 'vertical'
 
+  // ✅ GlobalKey para el GestureDetector del grid (para RenderBox)
+  final GlobalKey _gridKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
@@ -766,64 +769,61 @@ class _WordSearchGameState extends State<WordSearchGame> {
                 ),
               ],
             ),
-            child: Builder(
-              builder: (context) {
-                return GestureDetector(
-                  // ✅ FIX 2: Usar RenderBox para coordenadas precisas con escalado
-                  // Capturar eventos de arrastre continuo
-                  onPanStart: (details) {
-                    // Obtener RenderBox para conversión de coordenadas global a local
-                    final RenderBox? box = context.findRenderObject() as RenderBox?;
-                    if (box == null) return;
+            child: GestureDetector(
+              key: _gridKey,
+              // ✅ FIX 2: Usar RenderBox para coordenadas precisas con escalado
+              // Capturar eventos de arrastre continuo
+              onPanStart: (details) {
+                // Obtener RenderBox usando el GlobalKey
+                final RenderBox? box = _gridKey.currentContext?.findRenderObject() as RenderBox?;
+                if (box == null || !box.hasSize) return;
 
-                    // Convertir coordenadas globales a locales (crítico para FittedBox)
-                    final Offset localPos = box.globalToLocal(details.globalPosition);
+                // Convertir coordenadas globales a locales (crítico para FittedBox)
+                final Offset localPos = box.globalToLocal(details.globalPosition);
 
-                    // Calcular fila y columna basándose en la posición local
-                    final row = (localPos.dy / (cellSize + spacing)).floor();
-                    final col = (localPos.dx / (cellSize + spacing)).floor();
+                // Calcular fila y columna basándose en la posición local
+                final row = (localPos.dy / (cellSize + spacing)).floor();
+                final col = (localPos.dx / (cellSize + spacing)).floor();
 
-                    if (row >= 0 && row < gridSize && col >= 0 && col < gridSize) {
-                      _onCellTapDown(row, col);
-                    }
-                  },
-                  onPanUpdate: (details) {
-                    // Obtener RenderBox para conversión de coordenadas global a local
-                    final RenderBox? box = context.findRenderObject() as RenderBox?;
-                    if (box == null) return;
-
-                    // Convertir coordenadas globales a locales (crítico para FittedBox)
-                    final Offset localPos = box.globalToLocal(details.globalPosition);
-
-                    // Calcular fila y columna basándose en la posición local
-                    final row = (localPos.dy / (cellSize + spacing)).floor();
-                    final col = (localPos.dx / (cellSize + spacing)).floor();
-
-                    if (row >= 0 && row < gridSize && col >= 0 && col < gridSize) {
-                      _onCellDragUpdate(row, col);
-                    }
-                  },
-                  onPanEnd: (_) {
-                    _onCellTapUp();
-                  },
-                  child: GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: gridSize, // Dinámico: 8, 10 o 12
-                      mainAxisSpacing: spacing,
-                      crossAxisSpacing: spacing,
-                      childAspectRatio: 1.0, // Celdas cuadradas
-                    ),
-                    itemCount: gridSize * gridSize,
-                    itemBuilder: (context, index) {
-                      final row = index ~/ gridSize;
-                      final col = index % gridSize;
-                      return _buildCell(row, col, cellSize);
-                    },
-                  ),
-                );
+                if (row >= 0 && row < gridSize && col >= 0 && col < gridSize) {
+                  _onCellTapDown(row, col);
+                }
               },
+              onPanUpdate: (details) {
+                // Obtener RenderBox usando el GlobalKey
+                final RenderBox? box = _gridKey.currentContext?.findRenderObject() as RenderBox?;
+                if (box == null || !box.hasSize) return;
+
+                // Convertir coordenadas globales a locales (crítico para FittedBox)
+                final Offset localPos = box.globalToLocal(details.globalPosition);
+
+                // Calcular fila y columna basándose en la posición local
+                final row = (localPos.dy / (cellSize + spacing)).floor();
+                final col = (localPos.dx / (cellSize + spacing)).floor();
+
+                if (row >= 0 && row < gridSize && col >= 0 && col < gridSize) {
+                  _onCellDragUpdate(row, col);
+                }
+              },
+              onPanEnd: (_) {
+                _onCellTapUp();
+              },
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: gridSize, // Dinámico: 8, 10 o 12
+                  mainAxisSpacing: spacing,
+                  crossAxisSpacing: spacing,
+                  childAspectRatio: 1.0, // Celdas cuadradas
+                ),
+                itemCount: gridSize * gridSize,
+                itemBuilder: (context, index) {
+                  final row = index ~/ gridSize;
+                  final col = index % gridSize;
+                  return _buildCell(row, col, cellSize);
+                },
+              ),
             ),
           ),
         );
