@@ -538,7 +538,10 @@ class _WordSearchGameState extends State<WordSearchGame> {
       children: [
         SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            // ✅ FIX 1: Padding horizontal aumentado de 16 a 24 píxeles
+            // Esto aleja la primera columna del borde izquierdo y evita conflicto
+            // con el gesto de "Volver Atrás" del sistema operativo
+            padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
               children: [
                 const SizedBox(height: 16),
@@ -763,45 +766,64 @@ class _WordSearchGameState extends State<WordSearchGame> {
                 ),
               ],
             ),
-            child: GestureDetector(
-              // Capturar eventos de arrastre continuo
-              onPanStart: (details) {
-                final localPos = details.localPosition;
-                final row = (localPos.dy / (cellSize + spacing)).floor();
-                final col = (localPos.dx / (cellSize + spacing)).floor();
+            child: Builder(
+              builder: (context) {
+                return GestureDetector(
+                  // ✅ FIX 2: Usar RenderBox para coordenadas precisas con escalado
+                  // Capturar eventos de arrastre continuo
+                  onPanStart: (details) {
+                    // Obtener RenderBox para conversión de coordenadas global a local
+                    final RenderBox? box = context.findRenderObject() as RenderBox?;
+                    if (box == null) return;
 
-                if (row >= 0 && row < gridSize && col >= 0 && col < gridSize) {
-                  _onCellTapDown(row, col);
-                }
-              },
-              onPanUpdate: (details) {
-                final localPos = details.localPosition;
-                final row = (localPos.dy / (cellSize + spacing)).floor();
-                final col = (localPos.dx / (cellSize + spacing)).floor();
+                    // Convertir coordenadas globales a locales (crítico para FittedBox)
+                    final Offset localPos = box.globalToLocal(details.globalPosition);
 
-                if (row >= 0 && row < gridSize && col >= 0 && col < gridSize) {
-                  _onCellDragUpdate(row, col);
-                }
+                    // Calcular fila y columna basándose en la posición local
+                    final row = (localPos.dy / (cellSize + spacing)).floor();
+                    final col = (localPos.dx / (cellSize + spacing)).floor();
+
+                    if (row >= 0 && row < gridSize && col >= 0 && col < gridSize) {
+                      _onCellTapDown(row, col);
+                    }
+                  },
+                  onPanUpdate: (details) {
+                    // Obtener RenderBox para conversión de coordenadas global a local
+                    final RenderBox? box = context.findRenderObject() as RenderBox?;
+                    if (box == null) return;
+
+                    // Convertir coordenadas globales a locales (crítico para FittedBox)
+                    final Offset localPos = box.globalToLocal(details.globalPosition);
+
+                    // Calcular fila y columna basándose en la posición local
+                    final row = (localPos.dy / (cellSize + spacing)).floor();
+                    final col = (localPos.dx / (cellSize + spacing)).floor();
+
+                    if (row >= 0 && row < gridSize && col >= 0 && col < gridSize) {
+                      _onCellDragUpdate(row, col);
+                    }
+                  },
+                  onPanEnd: (_) {
+                    _onCellTapUp();
+                  },
+                  child: GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: gridSize, // Dinámico: 8, 10 o 12
+                      mainAxisSpacing: spacing,
+                      crossAxisSpacing: spacing,
+                      childAspectRatio: 1.0, // Celdas cuadradas
+                    ),
+                    itemCount: gridSize * gridSize,
+                    itemBuilder: (context, index) {
+                      final row = index ~/ gridSize;
+                      final col = index % gridSize;
+                      return _buildCell(row, col, cellSize);
+                    },
+                  ),
+                );
               },
-              onPanEnd: (_) {
-                _onCellTapUp();
-              },
-              child: GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: gridSize, // Dinámico: 8, 10 o 12
-                  mainAxisSpacing: spacing,
-                  crossAxisSpacing: spacing,
-                  childAspectRatio: 1.0, // Celdas cuadradas
-                ),
-                itemCount: gridSize * gridSize,
-                itemBuilder: (context, index) {
-                  final row = index ~/ gridSize;
-                  final col = index % gridSize;
-                  return _buildCell(row, col, cellSize);
-                },
-              ),
             ),
           ),
         );
